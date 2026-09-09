@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>저랑 데이트할래요? 💌</title>
+  
+  <!-- 카카오톡 및 SNS 공유 미리보기 (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="소중한 질문이 도착했습니다 💌">
+  <meta property="og:description" content="저랑 데이트할래요? 솔직하게 답해주세요! 🥰">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&auto=format&fit=crop&q=80">
+  <meta name="theme-color" content="#FFE4E8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 배경 하트 파티클 레이어 -->
+  <div class="floating-hearts" id="floatingHearts" aria-hidden="true"></div>
+
+  <!-- 메인 앱 컨테이너 -->
+  <main class="app-container">
+    
+    <!-- 1단계: 질문 화면 ("저랑 데이트할래요?") -->
+    <section id="step1" class="step-card active">
+      <div class="badge-tag">설레는 초대 💌</div>
+      
+      <div class="character-wrapper">
+        <div class="character-bounce">
+          <div class="heart-avatar">
+            <span class="avatar-emoji">🐱</span>
+            <span class="mini-heart">💖</span>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="main-title">저랑 데이트할래요?</h1>
+      <p class="sub-title">진지하게 고민하고 솔직하게 선택해줘요! 🥰</p>
+
+      <div class="dodge-playground" id="dodgePlayground">
+        <button type="button" id="btnYes" class="btn-action btn-yes">
+          좋아요 ❤️
+        </button>
+        <button type="button" id="btnNo" class="btn-action btn-no">
+          싫어요 💔
+        </button>
+      </div>
+
+      <p class="hint-text" id="dodgeHint">마음이 가는 쪽을 살포시 터치해보세요 ✨</p>
+    </section>
+
+    <!-- 2단계: 승낙 & 메뉴 선택 화면 -->
+    <section id="step2" class="step-card hidden">
+      <div class="badge-tag success-badge">약속 성사! 🎉</div>
+
+      <div class="celebrate-icon">
+        <span class="big-emoji">🥳</span>
+      </div>
+
+      <h2 class="main-title highlight-title">
+        헉... 사실 거절할 줄 알았는데<br>좋다니 저도 좋아요 &gt;&lt;
+      </h2>
+      <p class="sub-title">
+        우리 맛있는 거 먹으러 가요!<br>
+        <strong>뭐 먹고 싶은지 골라주세요</strong> (중복 선택 가능)
+      </p>
+
+      <!-- 메뉴 카테고리 선택지 -->
+      <form id="menuForm" class="menu-selection-form">
+        <div class="category-grid">
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="한식">
+            <div class="card-content">
+              <span class="cat-icon">🍚</span>
+              <span class="cat-name">한식</span>
+              <span class="cat-desc">삼겹살, 찌개, 솥밥 등</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="양식">
+            <div class="card-content">
+              <span class="cat-icon">🍝</span>
+              <span class="cat-name">양식</span>
+              <span class="cat-desc">파스타, 스테이크, 피자</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="일식">
+            <div class="card-content">
+              <span class="cat-icon">🍣</span>
+              <span class="cat-name">일식</span>
+              <span class="cat-desc">초밥, 라멘, 텐동, 돈카츠</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="중식">
+            <div class="card-content">
+              <span class="cat-icon">🥟</span>
+              <span class="cat-name">중식</span>
+              <span class="cat-desc">딤섬, 탕수육, 마라샹궈</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="아시안/분식">
+            <div class="card-content">
+              <span class="cat-icon">🍜</span>
+              <span class="cat-name">아시안/분식</span>
+              <span class="cat-desc">쌀국수, 팟타이, 떡볶이</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+
+          <label class="category-card">
+            <input type="checkbox" name="food_category" value="카페/디저트">
+            <div class="card-content">
+              <span class="cat-icon">🍰</span>
+              <span class="cat-name">디저트/카페</span>
+              <span class="cat-desc">예쁜 카페, 케이크, 빙수</span>
+            </div>
+            <span class="check-mark">✔</span>
+          </label>
+        </div>
+
+        <!-- 추가 입력 (선택) -->
+        <div class="input-group">
+          <label for="extraNote" class="input-label">
+            혹시 생각나는 특정 식당이나 못 먹는 음식이 있나요? (선택)
+          </label>
+          <input 
+            type="text" 
+            id="extraNote" 
+            name="extra_note" 
+            class="custom-input" 
+            placeholder="예: 오이 못 먹어요 / 연남동 가보고 싶어요!"
+            maxlength="100"
+          >
+        </div>
+
+        <!-- 선호 요일/시간대 (선택) -->
+        <div class="input-group">
+          <label for="preferredTime" class="input-label">
+            선호하는 날짜나 시간대 (선택)
+          </label>
+          <input 
+            type="text" 
+            id="preferredTime" 
+            name="preferred_time" 
+            class="custom-input" 
+            placeholder="예: 이번 주말 저녁 / 금요일 퇴근 후"
+            maxlength="60"
+          >
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit">
+          <span>선택 완료하고 알려주기 💌</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- 3단계: 완료 화면 -->
+    <section id="step3" class="step-card hidden">
+      <div class="badge-tag final-badge">전송 완료! 💌</div>
+
+      <div class="celebrate-icon">
+        <span class="big-emoji">💖</span>
+      </div>
+
+      <h2 class="main-title">약속 접수 완료!</h2>
+      <p class="sub-title">
+        알려주신 취향 잘 참고해서<br>
+        맛있는 곳 찾아보고 곧 연락드릴게요! 📞
+      </p>
+
+      <div class="summary-box" id="resultSummary">
+        <div class="summary-item">
+          <span class="summary-label">선택한 메뉴</span>
+          <span class="summary-val" id="summaryMenu">-</span>
+        </div>
+        <div class="summary-item" id="summaryNoteRow">
+          <span class="summary-label">추가 메모</span>
+          <span class="summary-val" id="summaryNote">-</span>
+        </div>
+        <div class="summary-item" id="summaryTimeRow">
+          <span class="summary-label">선호 시간</span>
+          <span class="summary-val" id="summaryTime">-</span>
+        </div>
+      </div>
+
+      <div class="bottom-actions">
+        <button type="button" id="btnKakaoShare" class="btn-secondary">
+          카카오톡으로 공유하기 💬
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 로딩 오버레이 -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">답변을 저장하고 있어요... 💕</p>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
