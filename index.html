@@ -51,20 +51,43 @@
       <p class="hint-text" id="dodgeHint">마음이 가는 쪽을 살포시 터치해보세요 ✨</p>
     </section>
 
-    <!-- 2단계: 승낙 & 메뉴 선택 화면 -->
-    <section id="step2" class="step-card hidden">
+    <!-- 중간 연출 화면: "거절할 줄 알았는데..." 페이드인/페이드아웃 인터스티셜 카드 -->
+    <section id="stepTransition" class="step-card transition-card hidden">
       <div class="badge-tag success-badge">약속 성사! 🎉</div>
-
-      <div class="celebrate-icon">
-        <span class="big-emoji">🥳</span>
+      
+      <div class="transition-icon-wrap">
+        <div class="transition-avatar">
+          <span class="avatar-emoji">🥰</span>
+          <span class="sparkle-effect">💖</span>
+        </div>
       </div>
 
-      <h2 class="main-title highlight-title">
-        헉... 사실 거절할 줄 알았는데<br>좋다니 저도 좋아요 &gt;&lt;
+      <h2 class="transition-title">
+        헉... 사실 거절할 줄 알았는데<br>
+        <span class="highlight-pink">좋다니 저도 좋아요 &gt;&lt;</span>
       </h2>
+      <p class="transition-desc">
+        그럼 우리 둘만의 맛있는 데이트를 골라볼까요? ✨
+      </p>
+
+      <div class="transition-loader-bar">
+        <div class="loader-progress"></div>
+      </div>
+      <p class="skip-hint">화면을 터치하면 바로 넘어갑니다 ⏩</p>
+    </section>
+
+    <!-- 2단계: 메뉴 선택 설문 화면 -->
+    <section id="step2" class="step-card hidden">
+      <div class="badge-tag menu-badge">메뉴 정하기 🍽️</div>
+
+      <div class="celebrate-icon">
+        <span class="big-emoji">🍽️</span>
+      </div>
+
+      <h2 class="main-title">우리 뭐 먹으러 갈까요?</h2>
       <p class="sub-title">
-        우리 맛있는 거 먹으러 가요!<br>
-        <strong>뭐 먹고 싶은지 골라주세요</strong> (중복 선택 가능)
+        좋아하는 음식 카테고리를 골라주세요!<br>
+        <strong>(여러 개 선택해도 좋아요 🥰)</strong>
       </p>
 
       <!-- 메뉴 카테고리 선택지 -->

@@ -227,6 +227,7 @@ function initDodgeButton() {
    -------------------------------------------------------------------------- */
 function initStepNavigation() {
   const step1 = document.getElementById("step1");
+  const stepTransition = document.getElementById("stepTransition");
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
 
@@ -234,22 +235,57 @@ function initStepNavigation() {
   const menuForm = document.getElementById("menuForm");
   const loadingOverlay = document.getElementById("loadingOverlay");
 
-  // [좋아요] 버튼 클릭 -> 2단계로 이동 & 축하 폭죽
+  // [좋아요] 버튼 클릭 -> 중간 연출(페이드인/페이드아웃) -> 2단계 설문창으로 이동
   btnYes.addEventListener("click", () => {
     fireConfetti();
 
+    // 1) 1단계 질문 화면 숨기기
     step1.classList.remove("active");
     step1.classList.add("hidden");
 
-    // 싫어요 버튼 원래 위치로 복귀(숨김)
+    // 싫어요 버튼 완전히 숨김
     const btnNo = document.getElementById("btnNo");
     if (btnNo) {
       btnNo.style.display = "none";
     }
 
-    step2.classList.remove("hidden");
-    step2.classList.add("active");
+    // 2) 중간 연출 화면(stepTransition) 페이드인
+    stepTransition.classList.remove("hidden");
+    stepTransition.classList.add("fade-in");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    let transitioned = false;
+    const goToStep2 = () => {
+      if (transitioned) return;
+      transitioned = true;
+
+      // 페이드아웃 애니메이션 시작
+      stepTransition.classList.remove("fade-in");
+      stepTransition.classList.add("fade-out");
+
+      // 페이드아웃 완료(450ms) 후 2단계 설문창 페이드인
+      setTimeout(() => {
+        stepTransition.classList.add("hidden");
+        stepTransition.classList.remove("fade-out");
+
+        step2.classList.remove("hidden");
+        step2.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 450);
+    };
+
+    // 유사 앱 리서치 기준 최적 감상 시간(2.3초) 후 자동으로 설문창 전환
+    const autoTimer = setTimeout(goToStep2, 2300);
+
+    // 사용자가 화면을 터치/클릭하면 대기 없이 바로 넘어가도록 터치 스킵 지원
+    stepTransition.addEventListener(
+      "click",
+      () => {
+        clearTimeout(autoTimer);
+        goToStep2();
+      },
+      { once: true }
+    );
   });
 
   // [선택 완료] 폼 제출 -> Google Sheets 저장 -> 3단계로 이동
