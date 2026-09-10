@@ -44,10 +44,13 @@ function initDodgeButton() {
   const btnNo = document.getElementById("btnNo");
   const btnYes = document.getElementById("btnYes");
   const dodgeHint = document.getElementById("dodgeHint");
+  const step1 = document.getElementById("step1");
 
   if (!btnNo || !btnYes) return;
 
   let dodgeCount = 0;
+  let autoDodgeTimer = null;
+
   const funnyTexts = [
     "어라? 🏃‍♂️",
     "안돼요~ 😜",
@@ -61,7 +64,13 @@ function initDodgeButton() {
     "헤헤 못 누르지롱 😝"
   ];
 
-  const dodge = (e) => {
+  const dodge = (e, isAuto = false) => {
+    // 자동 회피 타이머 취소
+    if (autoDodgeTimer) {
+      clearTimeout(autoDodgeTimer);
+      autoDodgeTimer = null;
+    }
+
     // 모바일 터치 이벤트 발생 시 가상 클릭(click) 방지
     if (e && e.cancelable && e.type !== "click") {
       e.preventDefault();
@@ -69,44 +78,94 @@ function initDodgeButton() {
 
     dodgeCount++;
 
-    // 버튼의 고정 크기 및 안전 영역 계산
-    const btnRect = btnNo.getBoundingClientRect();
-    const btnWidth = btnRect.width || 100;
-    const btnHeight = btnRect.height || 46;
-    const padding = 20;
+    // 1) 텍스트를 '먼저' 변경하여 정확한 버튼 크기를 측정할 수 있도록 함
+    let nextText;
+    if (isAuto) {
+      nextText = "누르기도 전에 도망! 🏃‍♂️💨";
+    } else {
+      nextText = funnyTexts[(dodgeCount - 1) % funnyTexts.length];
+    }
+    btnNo.innerHTML = nextText;
 
-    // 모바일 뷰포트 크기 (상/하단 safe area 여유 둠)
-    const winWidth = window.innerWidth;
-    const winHeight = window.innerHeight;
-
-    const minX = padding;
-    const maxX = Math.max(minX, winWidth - btnWidth - padding);
-    const minY = padding + 60;
-    const maxY = Math.max(minY, winHeight - btnHeight - padding - 60);
-
-    // 현재 위치와 너무 가깝지 않은 새 위치 랜덤 선정
-    let newX = Math.floor(minX + Math.random() * (maxX - minX));
-    let newY = Math.floor(minY + Math.random() * (maxY - minY));
-
-    // 버튼 스타일 적용
+    // 2) dodging 클래스를 추가하여 fixed 상태 적용
     btnNo.classList.add("dodging");
+
+    // 3) 화면 뷰포트 크기 측정 (모바일 브라우저 주소창/하단바 대응)
+    const viewportWidth = window.visualViewport
+      ? window.visualViewport.width
+      : (document.documentElement.clientWidth || window.innerWidth);
+    const viewportHeight = window.visualViewport
+      ? window.visualViewport.height
+      : (document.documentElement.clientHeight || window.innerHeight);
+
+    // 변경된 텍스트 기준 버튼의 실제 너비/높이 측정
+    const btnRect = btnNo.getBoundingClientRect();
+    const btnWidth = Math.ceil(btnRect.width || 120);
+    const btnHeight = Math.ceil(btnRect.height || 48);
+
+    // 모바일 안전 여백 (상단 노치/헤더 70px, 하단 툴바/홈바 85px, 좌우 20px)
+    const padX = 20;
+    const padTop = 70;
+    const padBottom = 85;
+
+    const minX = padX;
+    const maxX = Math.max(minX, viewportWidth - btnWidth - padX);
+    const minY = padTop;
+    const maxY = Math.max(minY, viewportHeight - btnHeight - padBottom);
+
+    // '좋아요' 버튼 영역과 겹치지 않도록 회피 좌표 계산
+    const yesRect = btnYes.getBoundingClientRect();
+
+    let newX = minX;
+    let newY = minY;
+    let foundSafePos = false;
+
+    // 최대 12회 시도하여 '좋아요' 버튼과 겹치지 않는 안전 좌표 탐색
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const candidateX = Math.floor(minX + Math.random() * (maxX - minX));
+      const candidateY = Math.floor(minY + Math.random() * (maxY - minY));
+
+      const overlapYes = !(
+        candidateX + btnWidth + 15 < yesRect.left ||
+        candidateX > yesRect.right + 15 ||
+        candidateY + btnHeight + 15 < yesRect.top ||
+        candidateY > yesRect.bottom + 15
+      );
+
+      if (!overlapYes) {
+        newX = candidateX;
+        newY = candidateY;
+        foundSafePos = true;
+        break;
+      }
+    }
+
+    if (!foundSafePos) {
+      // 겹치지 않는 위치를 못 찾은 경우 상단 또는 하단 여백으로 분기
+      newX = Math.floor(minX + Math.random() * (maxX - minX));
+      newY = Math.random() > 0.5 ? minY + 10 : maxY - 10;
+    }
+
+    // 4) 최종 안전 클램핑 (화면 밖으로 절대 나가지 않도록 강제 제한)
+    newX = Math.min(Math.max(minX, newX), maxX);
+    newY = Math.min(Math.max(minY, newY), maxY);
+
+    // 버튼 좌표 적용
     btnNo.style.left = `${newX}px`;
     btnNo.style.top = `${newY}px`;
 
-    // 텍스트 유쾌하게 변경
-    const nextText = funnyTexts[(dodgeCount - 1) % funnyTexts.length];
-    btnNo.innerHTML = nextText;
-
-    // 힌트 텍스트 변경
+    // 5) 힌트 텍스트 변경
     if (dodgeHint) {
-      if (dodgeCount === 1) {
+      if (isAuto) {
+        dodgeHint.textContent = "앗! 가만히 있었는데 1초 만에 알아서 도망갔어요! 🤣 (답은 '좋아요'뿐...)";
+      } else if (dodgeCount === 1) {
         dodgeHint.textContent = "어라? 싫어요 버튼이 도망갔어요! 🤣";
       } else if (dodgeCount >= 4) {
         dodgeHint.textContent = "이제 포기하시고 '좋아요'를 눌러주세요! 💖";
       }
     }
 
-    // '좋아요' 버튼 크기 점점 확대 (최대 1.4배)
+    // '좋아요' 버튼 크기 확대 (최대 1.4배)
     const scale = Math.min(1 + dodgeCount * 0.08, 1.4);
     btnYes.style.transform = `scale(${scale})`;
   };
@@ -122,6 +181,44 @@ function initDodgeButton() {
   btnNo.addEventListener("click", (e) => {
     e.preventDefault();
     dodge(e);
+  });
+
+  // [요구사항] 1초 지나면 자동으로 알아서 도망가도록 타이머 등록
+  autoDodgeTimer = setTimeout(() => {
+    if (step1 && step1.classList.contains("active") && dodgeCount === 0) {
+      dodge(null, true);
+    }
+  }, 1000);
+
+  // '좋아요' 버튼 클릭 시 타이머 취소
+  btnYes.addEventListener("click", () => {
+    if (autoDodgeTimer) {
+      clearTimeout(autoDodgeTimer);
+      autoDodgeTimer = null;
+    }
+  });
+
+  // 모바일 화면 회전/리사이즈 시 화면 밖으로 이탈 방지 재계산
+  window.addEventListener("resize", () => {
+    if (btnNo.classList.contains("dodging")) {
+      const viewportWidth = window.visualViewport
+        ? window.visualViewport.width
+        : (document.documentElement.clientWidth || window.innerWidth);
+      const viewportHeight = window.visualViewport
+        ? window.visualViewport.height
+        : (document.documentElement.clientHeight || window.innerHeight);
+
+      const rect = btnNo.getBoundingClientRect();
+      const padX = 20, padTop = 70, padBottom = 85;
+      const maxX = Math.max(padX, viewportWidth - rect.width - padX);
+      const maxY = Math.max(padTop, viewportHeight - rect.height - padBottom);
+
+      const currentX = parseInt(btnNo.style.left, 10) || padX;
+      const currentY = parseInt(btnNo.style.top, 10) || padTop;
+
+      btnNo.style.left = `${Math.min(Math.max(padX, currentX), maxX)}px`;
+      btnNo.style.top = `${Math.min(Math.max(padTop, currentY), maxY)}px`;
+    }
   });
 }
 
