@@ -52,16 +52,14 @@ function initDodgeButton() {
   let autoDodgeTimer = null;
 
   const funnyTexts = [
-    "어라? 🏃‍♂️",
-    "안돼~ 😜",
-    "실패! 😆",
-    "잡아봐~ 💨",
-    "놓쳤지? 😝",
-    "메롱~ 😛",
-    "포기해! 🥺",
-    "좋아요만! 💖",
-    "안되지롱 🤭",
-    "까꿍~ 👻"
+    "싫어요 💨",
+    "싫어요 😜",
+    "싫어요 🏃‍♂️",
+    "싫어요 😆",
+    "싫어요 😝",
+    "싫어요 🥺",
+    "싫어요 🤭",
+    "싫어요 👻"
   ];
 
   const dodge = (e, isAuto = false) => {
@@ -78,14 +76,23 @@ function initDodgeButton() {
 
     dodgeCount++;
 
-    // 1) 텍스트를 '먼저' 변경하여 정확한 버튼 크기를 측정 (짧은 글자로 화면 최소 차지)
-    let nextText = isAuto ? "먼저 도망! 💨" : funnyTexts[(dodgeCount - 1) % funnyTexts.length];
+    // 1) [중요] '싫어요' 글자는 그대로 유지하고 뒤에 귀여운 액션 이모지만 붙임
+    let nextText = isAuto ? "싫어요 💨" : funnyTexts[(dodgeCount - 1) % funnyTexts.length];
     btnNo.innerHTML = nextText;
 
-    // 2) dodging 클래스를 추가하여 fixed 상태 적용
+    // 2) [버그 수정] 부모 카드의 CSS transform/overflow에 의해 화면에서 사라지는 현상 원천 차단
+    // 현재 위치를 캡처한 뒤 document.body의 직속 자식으로 이동하여 부드럽게 화면을 날아다니게 함
+    if (btnNo.parentElement !== document.body) {
+      const currentRect = btnNo.getBoundingClientRect();
+      btnNo.style.position = "fixed";
+      btnNo.style.left = `${currentRect.left}px`;
+      btnNo.style.top = `${currentRect.top}px`;
+      document.body.appendChild(btnNo);
+    }
+
     btnNo.classList.add("dodging");
 
-    // 3) 화면 뷰포트 크기 측정
+    // 3) 실제 화면 뷰포트 크기 측정
     const viewportWidth = window.visualViewport
       ? window.visualViewport.width
       : (document.documentElement.clientWidth || window.innerWidth);
@@ -108,11 +115,9 @@ function initDodgeButton() {
     const minY = padTop;
     const maxY = Math.max(minY, viewportHeight - btnHeight - padBottom);
 
-    // [요구사항 1] 글자를 절대 가리지 않도록 금지 구역(Forbidden Rectangles) 수집
+    // [요구사항] 글자를 절대 가리지 않도록 금지 구역 수집
     const forbiddenRects = [];
     const elementsToAvoid = [
-      step1.querySelector(".badge-tag"),
-      step1.querySelector(".character-wrapper"),
       step1.querySelector(".main-title"),
       step1.querySelector(".sub-title"),
       step1.querySelector("#dodgeHint"),
@@ -123,21 +128,20 @@ function initDodgeButton() {
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) {
         forbiddenRects.push({
-          left: r.left - 12,
-          top: r.top - 10,
-          right: r.right + 12,
-          bottom: r.bottom + 10
+          left: r.left - 10,
+          top: r.top - 8,
+          right: r.right + 10,
+          bottom: r.bottom + 8
         });
       }
     });
 
-    // 글자나 버튼과 겹치는지 검사하는 함수
     const isCollidingWithText = (x, y) => {
       const right = x + btnWidth;
       const bottom = y + btnHeight;
       for (const r of forbiddenRects) {
         if (x < r.right && right > r.left && y < r.bottom && bottom > r.top) {
-          return true; // 글자 영역 침범!
+          return true; // 글자나 버튼 영역과 겹침!
         }
       }
       return false; // 안전함
@@ -147,8 +151,8 @@ function initDodgeButton() {
     let newY = minY;
     let foundSafePos = false;
 
-    // 최대 35회 무작위 시도로 글자와 겹치지 않는 안전 좌표 탐색
-    for (let attempt = 0; attempt < 35; attempt++) {
+    // 최대 40회 무작위 시도로 글자와 겹치지 않는 안전 좌표 탐색
+    for (let attempt = 0; attempt < 40; attempt++) {
       const candidateX = Math.floor(minX + Math.random() * (maxX - minX));
       const candidateY = Math.floor(minY + Math.random() * (maxY - minY));
 
@@ -161,7 +165,7 @@ function initDodgeButton() {
     }
 
     if (!foundSafePos) {
-      // 글자와 겹치지 않는 위치를 못 찾은 경우, 카드 아래/위 빈 여백에 배치
+      // 겹치지 않는 위치를 못 찾은 경우, 카드 아래/위 빈 여백에 확정 배치 (글자 절대 가리지 않음)
       const cardRect = step1.getBoundingClientRect();
       if (cardRect.bottom + btnHeight + 10 <= maxY) {
         newX = Math.floor(minX + Math.random() * (maxX - minX));
@@ -175,26 +179,26 @@ function initDodgeButton() {
       }
     }
 
-    // 4) 최종 안전 클램핑 (화면 밖으로 1px도 나가지 않도록 보장)
+    // 4) 최종 안전 클램핑 (화면 밖으로 절대 나가지 않도록 보장)
     newX = Math.min(Math.max(minX, newX), maxX);
     newY = Math.min(Math.max(minY, newY), maxY);
 
-    // 버튼 좌표 적용
+    // 버튼 좌표 적용 -> CSS transition을 통해 부드럽게 미끄러지듯 도망감!
     btnNo.style.left = `${newX}px`;
     btnNo.style.top = `${newY}px`;
 
     // 5) 힌트 텍스트 변경
     if (dodgeHint) {
       if (isAuto) {
-        dodgeHint.textContent = "앗! 가만히 있었는데 1초 만에 알아서 도망갔어요! 🤣";
+        dodgeHint.textContent = "어라? 싫어요 버튼이 혼자 도망갔어요! 🏃‍♂️💨";
       } else if (dodgeCount === 1) {
-        dodgeHint.textContent = "어라? 싫어요 버튼이 도망갔어요! 🤣";
+        dodgeHint.textContent = "잡아보려 해도 자꾸 도망가요! 🤣";
       } else if (dodgeCount >= 3) {
         dodgeHint.textContent = "이제 포기하시고 '좋아요'를 눌러주세요! 💖";
       }
     }
 
-    // '좋아요' 버튼 크기 확대 (최대 1.4배)
+    // '좋아요' 버튼 크기 확대
     const scale = Math.min(1 + dodgeCount * 0.08, 1.4);
     btnYes.style.transform = `scale(${scale})`;
   };
@@ -273,10 +277,11 @@ function initStepNavigation() {
     step1.classList.remove("active");
     step1.classList.add("hidden");
 
-    // 싫어요 버튼 완전히 숨김
+    // 싫어요 버튼 완전히 숨김 및 제거
     const btnNo = document.getElementById("btnNo");
     if (btnNo) {
       btnNo.style.display = "none";
+      btnNo.remove();
     }
 
     // 2) 중간 연출 화면(stepTransition) 부드럽게 페이드인
