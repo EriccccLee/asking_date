@@ -182,12 +182,12 @@ body {
 
 .transition-card.fade-in {
   display: flex !important;
-  animation: transitionFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: transitionFadeIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .transition-card.fade-out {
   display: flex !important;
-  animation: transitionFadeOut 0.45s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+  animation: transitionFadeOut 0.6s cubic-bezier(0.7, 0, 0.84, 0) forwards;
 }
 
 @keyframes transitionFadeIn {
@@ -271,34 +271,53 @@ body {
   font-size: 14.5px;
   color: var(--text-muted);
   line-height: 1.5;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
+  word-break: keep-all;
 }
 
-/* 부드러운 로딩 게이지 바 */
-.transition-loader-bar {
-  width: 140px;
-  height: 5px;
-  background: #FFE3E8;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 10px;
+/* 터치 안내 버튼 (눈에 잘 띄고 누르고 싶어지는 펄스 버튼) */
+.transition-cta-wrap {
+  width: 100%;
+  margin: 8px 0 14px;
 }
 
-.loader-progress {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #FF758F, #FF4D6D);
-  border-radius: 999px;
-  animation: fillProgress 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+.btn-touch-next {
+  width: 100%;
+  padding: 15px 20px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF5C7A 0%, #E0244C 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 10px 24px var(--primary-glow);
+  cursor: pointer;
+  animation: pulseButton 1.8s infinite ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.15s ease;
 }
 
-@keyframes fillProgress {
-  0% { width: 0%; }
-  100% { width: 100%; }
+.btn-touch-next:active {
+  transform: scale(0.96);
+}
+
+@keyframes pulseButton {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 20px var(--primary-glow);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 14px 30px rgba(255, 77, 109, 0.5);
+  }
 }
 
 .skip-hint {
-  font-size: 12px;
+  font-size: 12.5px;
   color: #ADB5BD;
 }
 

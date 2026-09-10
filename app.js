@@ -53,15 +53,15 @@ function initDodgeButton() {
 
   const funnyTexts = [
     "어라? 🏃‍♂️",
-    "안돼요~ 😜",
-    "손이 미끄러졌나? 🫨",
-    "잡아봐라~ 💨",
+    "안돼~ 😜",
     "실패! 😆",
-    "포기하면 편해요 🥺",
-    "좋아요만 눌러줘요 💖",
-    "어딜 누르려구! 🤭",
-    "거절은 거절한다! 🙅‍♀️",
-    "헤헤 못 누르지롱 😝"
+    "잡아봐~ 💨",
+    "놓쳤지? 😝",
+    "메롱~ 😛",
+    "포기해! 🥺",
+    "좋아요만! 💖",
+    "안되지롱 🤭",
+    "까꿍~ 👻"
   ];
 
   const dodge = (e, isAuto = false) => {
@@ -78,19 +78,14 @@ function initDodgeButton() {
 
     dodgeCount++;
 
-    // 1) 텍스트를 '먼저' 변경하여 정확한 버튼 크기를 측정할 수 있도록 함
-    let nextText;
-    if (isAuto) {
-      nextText = "누르기도 전에 도망! 🏃‍♂️💨";
-    } else {
-      nextText = funnyTexts[(dodgeCount - 1) % funnyTexts.length];
-    }
+    // 1) 텍스트를 '먼저' 변경하여 정확한 버튼 크기를 측정 (짧은 글자로 화면 최소 차지)
+    let nextText = isAuto ? "먼저 도망! 💨" : funnyTexts[(dodgeCount - 1) % funnyTexts.length];
     btnNo.innerHTML = nextText;
 
     // 2) dodging 클래스를 추가하여 fixed 상태 적용
     btnNo.classList.add("dodging");
 
-    // 3) 화면 뷰포트 크기 측정 (모바일 브라우저 주소창/하단바 대응)
+    // 3) 화면 뷰포트 크기 측정
     const viewportWidth = window.visualViewport
       ? window.visualViewport.width
       : (document.documentElement.clientWidth || window.innerWidth);
@@ -100,39 +95,64 @@ function initDodgeButton() {
 
     // 변경된 텍스트 기준 버튼의 실제 너비/높이 측정
     const btnRect = btnNo.getBoundingClientRect();
-    const btnWidth = Math.ceil(btnRect.width || 120);
-    const btnHeight = Math.ceil(btnRect.height || 48);
+    const btnWidth = Math.ceil(btnRect.width || 90);
+    const btnHeight = Math.ceil(btnRect.height || 44);
 
-    // 모바일 안전 여백 (상단 노치/헤더 70px, 하단 툴바/홈바 85px, 좌우 20px)
-    const padX = 20;
-    const padTop = 70;
-    const padBottom = 85;
+    // 모바일 안전 여백 (상단 노치/헤더 65px, 하단 툴바/홈바 80px, 좌우 16px)
+    const padX = 16;
+    const padTop = 65;
+    const padBottom = 80;
 
     const minX = padX;
     const maxX = Math.max(minX, viewportWidth - btnWidth - padX);
     const minY = padTop;
     const maxY = Math.max(minY, viewportHeight - btnHeight - padBottom);
 
-    // '좋아요' 버튼 영역과 겹치지 않도록 회피 좌표 계산
-    const yesRect = btnYes.getBoundingClientRect();
+    // [요구사항 1] 글자를 절대 가리지 않도록 금지 구역(Forbidden Rectangles) 수집
+    const forbiddenRects = [];
+    const elementsToAvoid = [
+      step1.querySelector(".badge-tag"),
+      step1.querySelector(".character-wrapper"),
+      step1.querySelector(".main-title"),
+      step1.querySelector(".sub-title"),
+      step1.querySelector("#dodgeHint"),
+      btnYes
+    ].filter(Boolean);
+
+    elementsToAvoid.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        forbiddenRects.push({
+          left: r.left - 12,
+          top: r.top - 10,
+          right: r.right + 12,
+          bottom: r.bottom + 10
+        });
+      }
+    });
+
+    // 글자나 버튼과 겹치는지 검사하는 함수
+    const isCollidingWithText = (x, y) => {
+      const right = x + btnWidth;
+      const bottom = y + btnHeight;
+      for (const r of forbiddenRects) {
+        if (x < r.right && right > r.left && y < r.bottom && bottom > r.top) {
+          return true; // 글자 영역 침범!
+        }
+      }
+      return false; // 안전함
+    };
 
     let newX = minX;
     let newY = minY;
     let foundSafePos = false;
 
-    // 최대 12회 시도하여 '좋아요' 버튼과 겹치지 않는 안전 좌표 탐색
-    for (let attempt = 0; attempt < 12; attempt++) {
+    // 최대 35회 무작위 시도로 글자와 겹치지 않는 안전 좌표 탐색
+    for (let attempt = 0; attempt < 35; attempt++) {
       const candidateX = Math.floor(minX + Math.random() * (maxX - minX));
       const candidateY = Math.floor(minY + Math.random() * (maxY - minY));
 
-      const overlapYes = !(
-        candidateX + btnWidth + 15 < yesRect.left ||
-        candidateX > yesRect.right + 15 ||
-        candidateY + btnHeight + 15 < yesRect.top ||
-        candidateY > yesRect.bottom + 15
-      );
-
-      if (!overlapYes) {
+      if (!isCollidingWithText(candidateX, candidateY)) {
         newX = candidateX;
         newY = candidateY;
         foundSafePos = true;
@@ -141,12 +161,21 @@ function initDodgeButton() {
     }
 
     if (!foundSafePos) {
-      // 겹치지 않는 위치를 못 찾은 경우 상단 또는 하단 여백으로 분기
-      newX = Math.floor(minX + Math.random() * (maxX - minX));
-      newY = Math.random() > 0.5 ? minY + 10 : maxY - 10;
+      // 글자와 겹치지 않는 위치를 못 찾은 경우, 카드 아래/위 빈 여백에 배치
+      const cardRect = step1.getBoundingClientRect();
+      if (cardRect.bottom + btnHeight + 10 <= maxY) {
+        newX = Math.floor(minX + Math.random() * (maxX - minX));
+        newY = Math.floor(cardRect.bottom + 12);
+      } else if (cardRect.top - btnHeight - 12 >= minY) {
+        newX = Math.floor(minX + Math.random() * (maxX - minX));
+        newY = Math.floor(cardRect.top - btnHeight - 12);
+      } else {
+        newX = Math.random() > 0.5 ? minX : maxX;
+        newY = Math.max(minY, Math.min(cardRect.bottom, maxY));
+      }
     }
 
-    // 4) 최종 안전 클램핑 (화면 밖으로 절대 나가지 않도록 강제 제한)
+    // 4) 최종 안전 클램핑 (화면 밖으로 1px도 나가지 않도록 보장)
     newX = Math.min(Math.max(minX, newX), maxX);
     newY = Math.min(Math.max(minY, newY), maxY);
 
@@ -157,10 +186,10 @@ function initDodgeButton() {
     // 5) 힌트 텍스트 변경
     if (dodgeHint) {
       if (isAuto) {
-        dodgeHint.textContent = "앗! 가만히 있었는데 1초 만에 알아서 도망갔어요! 🤣 (답은 '좋아요'뿐...)";
+        dodgeHint.textContent = "앗! 가만히 있었는데 1초 만에 알아서 도망갔어요! 🤣";
       } else if (dodgeCount === 1) {
         dodgeHint.textContent = "어라? 싫어요 버튼이 도망갔어요! 🤣";
-      } else if (dodgeCount >= 4) {
+      } else if (dodgeCount >= 3) {
         dodgeHint.textContent = "이제 포기하시고 '좋아요'를 눌러주세요! 💖";
       }
     }
@@ -235,9 +264,10 @@ function initStepNavigation() {
   const menuForm = document.getElementById("menuForm");
   const loadingOverlay = document.getElementById("loadingOverlay");
 
-  // [좋아요] 버튼 클릭 -> 중간 연출(페이드인/페이드아웃) -> 2단계 설문창으로 이동
+  // [좋아요] 버튼 클릭 -> 하늘에서 별이 쏟아지는 특수 연출 & 중간 연출 화면
   btnYes.addEventListener("click", () => {
-    fireConfetti();
+    // [요구사항 4] 위에서 별이 쏟아지는 특수 효과 실행
+    fireStarShower();
 
     // 1) 1단계 질문 화면 숨기기
     step1.classList.remove("active");
@@ -249,7 +279,7 @@ function initStepNavigation() {
       btnNo.style.display = "none";
     }
 
-    // 2) 중간 연출 화면(stepTransition) 페이드인
+    // 2) 중간 연출 화면(stepTransition) 부드럽게 페이드인
     stepTransition.classList.remove("hidden");
     stepTransition.classList.add("fade-in");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -259,11 +289,11 @@ function initStepNavigation() {
       if (transitioned) return;
       transitioned = true;
 
-      // 페이드아웃 애니메이션 시작
+      // 페이드아웃 애니메이션 시작 (0.6초)
       stepTransition.classList.remove("fade-in");
       stepTransition.classList.add("fade-out");
 
-      // 페이드아웃 완료(450ms) 후 2단계 설문창 페이드인
+      // 페이드아웃 완료(600ms) 후 2단계 설문창 페이드인
       setTimeout(() => {
         stepTransition.classList.add("hidden");
         stepTransition.classList.remove("fade-out");
@@ -271,21 +301,19 @@ function initStepNavigation() {
         step2.classList.remove("hidden");
         step2.classList.add("active");
         window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 450);
+      }, 600);
     };
 
-    // 유사 앱 리서치 기준 최적 감상 시간(2.3초) 후 자동으로 설문창 전환
-    const autoTimer = setTimeout(goToStep2, 2300);
+    // [요구사항 3] 터치로 넘어가므로 30초 동안 여유롭게 감상할 수 있도록 시간 연장
+    const autoTimer = setTimeout(goToStep2, 30000);
 
-    // 사용자가 화면을 터치/클릭하면 대기 없이 바로 넘어가도록 터치 스킵 지원
-    stepTransition.addEventListener(
-      "click",
-      () => {
-        clearTimeout(autoTimer);
-        goToStep2();
-      },
-      { once: true }
-    );
+    // 화면 터치 또는 '메뉴 고르러 가기' 버튼 클릭 시 즉시 다음 단계로 전환
+    const handleTransitionTouch = () => {
+      clearTimeout(autoTimer);
+      goToStep2();
+    };
+
+    stepTransition.addEventListener("click", handleTransitionTouch, { once: true });
   });
 
   // [선택 완료] 폼 제출 -> Google Sheets 저장 -> 3단계로 이동
@@ -436,6 +464,72 @@ function showToast(message) {
   setTimeout(() => {
     toast.classList.remove("show");
   }, 2800);
+}
+
+/* --------------------------------------------------------------------------
+   별이 쏟아지는 특수 연출 (Star Shower Effect)
+   -------------------------------------------------------------------------- */
+function fireStarShower() {
+  if (typeof confetti !== "function") return;
+
+  // 1) 중앙에서 터지는 찬란한 황금빛 별 폭죽
+  confetti({
+    particleCount: 50,
+    spread: 100,
+    origin: { y: 0.45 },
+    shapes: ["star"],
+    colors: ["#FFE600", "#FFD700", "#FFAA00", "#FFFFFF", "#FF6B8B", "#FF85A1"],
+    scalar: 1.4,
+    ticks: 250
+  });
+
+  // 2) 하늘(상단 화면 밖)에서 은하수처럼 주르륵 쏟아져 내리는 별비 (4.5초 지속)
+  const duration = 4500;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    // 화면 상단(y: -0.05)에서 아래로 쏟아지는 별들
+    confetti({
+      particleCount: 4,
+      angle: 90,
+      spread: 75,
+      origin: { x: Math.random(), y: -0.05 },
+      gravity: 0.85,
+      drift: (Math.random() - 0.5) * 0.4,
+      shapes: ["star"],
+      colors: ["#FFE600", "#FFD700", "#FFB703", "#FFF9A6", "#FFFFFF", "#FF6B8B"],
+      ticks: 320,
+      scalar: Math.random() * 0.8 + 0.8
+    });
+
+    // 화면 좌우 모서리에서 쏟아지는 유성 스트림
+    if (Math.random() < 0.28) {
+      confetti({
+        particleCount: 2,
+        angle: 65,
+        spread: 35,
+        origin: { x: 0, y: 0.05 },
+        gravity: 0.7,
+        shapes: ["star"],
+        colors: ["#FFD700", "#FFFFFF", "#FF85A1"],
+        scalar: 1.2
+      });
+      confetti({
+        particleCount: 2,
+        angle: 115,
+        spread: 35,
+        origin: { x: 1, y: 0.05 },
+        gravity: 0.7,
+        shapes: ["star"],
+        colors: ["#FFD700", "#FFFFFF", "#FF85A1"],
+        scalar: 1.2
+      });
+    }
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
 }
 
 function fireConfetti() {
