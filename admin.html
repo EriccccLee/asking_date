@@ -55,7 +55,7 @@
 
     <!-- 기본 설정 (타이틀 & 인트로) -->
     <section class="card config-card">
-      <h2 class="section-title">1. 첫 질문 화면 설정</h2>
+      <h2 class="section-title">1. 첫 질문 & 축하 연출 문구 설정</h2>
       <div class="form-group">
         <label for="courseTitle">첫 화면 질문 제목</label>
         <input type="text" id="courseTitle" class="form-control" placeholder="저랑 데이트할래요? 🥰" value="저랑 데이트할래요? 🥰">
@@ -63,6 +63,24 @@
       <div class="form-group">
         <label for="courseSubTitle">첫 화면 부제목</label>
         <input type="text" id="courseSubTitle" class="form-control" placeholder="진지하게 고민하고 솔직하게 선택해줘요!" value="진지하게 고민하고 솔직하게 선택해줘요! 🥰">
+      </div>
+
+      <div class="form-group" style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-color);">
+        <label for="transitionMainMsg">
+          💖 '좋아요' 누른 직후 축하 화면 메인 문구
+          <small style="display:block; font-weight: normal; color: var(--text-muted); font-size: 11.5px; margin-top: 2px;">
+            상대방이 좋아요를 누르면 별빛 효과와 함께 나타나는 감동 멘트입니다. (줄바꿈 가능)
+          </small>
+        </label>
+        <textarea id="transitionMainMsg" class="form-control" rows="2" placeholder="헉... 사실 거절할 줄 알았는데&#10;좋다니 저도 좋아요 &gt;&lt;">헉... 사실 거절할 줄 알았는데
+좋다니 저도 좋아요 &gt;&lt;</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="transitionSubMsg">
+          ✨ '좋아요' 축하 화면 부제목 문구
+        </label>
+        <input type="text" id="transitionSubMsg" class="form-control" placeholder="하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?" value="하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?">
       </div>
     </section>
 

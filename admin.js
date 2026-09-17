@@ -25,6 +25,8 @@ const PRESET_COURSES = {
   yeonnam: {
     title: "저랑 데이트할래요? 🥰",
     subTitle: "진지하게 고민하고 솔직하게 선택해줘요!",
+    transitionMain: "헉... 사실 거절할 줄 알았는데\n좋다니 저도 너무 좋아요! ><",
+    transitionSub: "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n우리 둘만의 감성 데이트 코스를 골라볼까요?",
     steps: [
       {
         id: "step_time",
@@ -112,6 +114,8 @@ const PRESET_COURSES = {
   seongsu: {
     title: "성수동에서 데이트할래요? 🎨",
     subTitle: "주말 핫플레이스 코스를 준비했어요!",
+    transitionMain: "진짜요?! 너무 신나요!\n성수동 핫플 다 정복하러 가요! 🎨🔥",
+    transitionSub: "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n가장 마음에 드는 코스를 골라주세요!",
     steps: [
       {
         id: "step_time",
@@ -172,6 +176,8 @@ const PRESET_COURSES = {
   weekend: {
     title: "이번 주말에 저랑 데이트할래요? 🌿",
     subTitle: "날씨 좋은 날 여유롭게 힐링해요!",
+    transitionMain: "와아! 주말 데이트 수락 고마워요!\n벌써부터 기대돼요 🌿💚",
+    transitionSub: "하늘에서 별이 쏟아지는 것처럼 행복해요 ✨\n원하는 주말 일정을 골라봐요!",
     steps: [
       {
         id: "step_time",
@@ -209,6 +215,8 @@ const PRESET_COURSES = {
   blank: {
     title: "저랑 데이트할래요? 🥰",
     subTitle: "진지하게 고민하고 솔직하게 선택해줘요!",
+    transitionMain: "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><",
+    transitionSub: "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n우리 둘만의 데이트 코스를 골라볼까요?",
     steps: [
       {
         id: "step_custom_1",
@@ -264,6 +272,8 @@ function loadSavedDraft() {
       currentCourse = imported;
       document.getElementById("courseTitle").value = currentCourse.title || "저랑 데이트할래요? 🥰";
       document.getElementById("courseSubTitle").value = currentCourse.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!";
+      document.getElementById("transitionMainMsg").value = currentCourse.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><";
+      document.getElementById("transitionSubMsg").value = currentCourse.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?";
       renderSteps();
       saveDraft();
       showAdminToast("링크에서 데이트 코스를 불러왔습니다 ✨");
@@ -285,6 +295,8 @@ function loadSavedDraft() {
   }
   document.getElementById("courseTitle").value = currentCourse.title || "저랑 데이트할래요? 🥰";
   document.getElementById("courseSubTitle").value = currentCourse.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!";
+  document.getElementById("transitionMainMsg").value = currentCourse.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><";
+  document.getElementById("transitionSubMsg").value = currentCourse.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?";
   renderSteps();
 }
 
@@ -319,6 +331,8 @@ function parsePlanRaw(raw) {
     return {
       title: data.t || data.title || "저랑 데이트할래요? 🥰",
       subTitle: data.s || data.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!",
+      transitionMain: data.tm || data.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><",
+      transitionSub: data.ts || data.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?",
       steps: data.st || data.steps || []
     };
   } catch (e) {
@@ -330,6 +344,8 @@ function parsePlanRaw(raw) {
 function saveDraft() {
   currentCourse.title = document.getElementById("courseTitle").value.trim();
   currentCourse.subTitle = document.getElementById("courseSubTitle").value.trim();
+  currentCourse.transitionMain = document.getElementById("transitionMainMsg").value.trim();
+  currentCourse.transitionSub = document.getElementById("transitionSubMsg").value.trim();
   localStorage.setItem("asking_date_admin_draft", JSON.stringify(currentCourse));
 }
 
@@ -346,6 +362,8 @@ function initPresetButtons() {
           currentCourse = JSON.parse(JSON.stringify(PRESET_COURSES[presetKey]));
           document.getElementById("courseTitle").value = currentCourse.title;
           document.getElementById("courseSubTitle").value = currentCourse.subTitle;
+          document.getElementById("transitionMainMsg").value = currentCourse.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><";
+          document.getElementById("transitionSubMsg").value = currentCourse.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?";
           saveDraft();
           renderSteps();
           showAdminToast(`'${btn.querySelector(".preset-title").textContent}' 템플릿이 적용되었습니다 ✨`);
@@ -356,6 +374,8 @@ function initPresetButtons() {
 
   document.getElementById("courseTitle").addEventListener("input", saveDraft);
   document.getElementById("courseSubTitle").addEventListener("input", saveDraft);
+  document.getElementById("transitionMainMsg").addEventListener("input", saveDraft);
+  document.getElementById("transitionSubMsg").addEventListener("input", saveDraft);
 }
 
 /* --------------------------------------------------------------------------
@@ -791,6 +811,8 @@ function buildShareUrl() {
   const cleanPlan = {
     t: currentCourse.title,
     s: currentCourse.subTitle,
+    tm: currentCourse.transitionMain,
+    ts: currentCourse.transitionSub,
     st: currentCourse.steps
   };
 

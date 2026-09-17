@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const DEFAULT_PLAN = {
   title: "저랑 데이트할래요? 🥰",
   subTitle: "진지하게 고민하고 솔직하게 선택해줘요!",
+  transitionMain: "헉... 사실 거절할 줄 알았는데\n좋다니 저도 너무 좋아요! ><",
+  transitionSub: "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n우리 둘만의 데이트 코스를 골라볼까요?",
   steps: [
     {
       id: "step_time",
@@ -140,6 +142,16 @@ function initCustomPlan() {
     subEl.textContent = window.activeCustomPlan.subTitle;
   }
 
+  // 좋아요 클릭 직후 축하 연출 화면 문구 반영
+  const transMainEl = document.getElementById("transitionMainMsg");
+  const transSubEl = document.getElementById("transitionSubMsg");
+  if (transMainEl && window.activeCustomPlan.transitionMain) {
+    transMainEl.innerHTML = escapeHtml(window.activeCustomPlan.transitionMain).replace(/\n/g, "<br>");
+  }
+  if (transSubEl && window.activeCustomPlan.transitionSub) {
+    transSubEl.innerHTML = escapeHtml(window.activeCustomPlan.transitionSub).replace(/\n/g, "<br>");
+  }
+
   // 2단계 커스텀 코스 동적 렌더링
   renderCustomCourse(window.activeCustomPlan);
 }
@@ -186,6 +198,8 @@ function parsePlanFromUrl() {
     return {
       title: data.t || data.title || "저랑 데이트할래요? 🥰",
       subTitle: data.s || data.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!",
+      transitionMain: data.tm || data.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><",
+      transitionSub: data.ts || data.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n우리 둘만의 데이트 코스를 골라볼까요?",
       steps: data.st || data.steps || []
     };
   } catch (err) {
