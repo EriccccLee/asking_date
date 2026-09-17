@@ -200,7 +200,12 @@ function parsePlanFromUrl() {
       subTitle: data.s || data.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!",
       transitionMain: data.tm || data.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><",
       transitionSub: data.ts || data.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨\n우리 둘만의 데이트 코스를 골라볼까요?",
-      steps: data.st || data.steps || []
+      steps: (data.st || data.steps || []).map((step, idx) => ({
+        ...step,
+        id: step.id || "step_" + idx,
+        allowCustomInput: Boolean(step.allowCustomInput || step.ci),
+        customInputPlaceholder: step.customInputPlaceholder || step.cip || ""
+      }))
     };
   } catch (err) {
     console.error("커스텀 데이트 플랜 파싱 실패:", err);
@@ -239,6 +244,19 @@ function renderCustomCourse(plan) {
 
     if (step.type === "choice") {
       const options = step.options || [];
+      const customOptionHtml = step.allowCustomInput ? `
+        <div class="custom-writein-card" data-step-id="${stepId}">
+          <label class="custom-writein-label">
+            <input type="${step.multiple ? 'checkbox' : 'radio'}" name="${stepId}" value="__custom__" class="custom-writein-checkbox">
+            <span class="choice-chip-radio-icon"></span>
+            <span class="custom-writein-title">✍️ 직접 입력하기</span>
+          </label>
+          <div class="custom-writein-body">
+            <input type="text" class="custom-writein-input" placeholder="${escapeHtml(step.customInputPlaceholder || '원하는 답변을 직접 적어주세요')}" maxlength="100">
+          </div>
+        </div>
+      ` : "";
+
       contentHtml = `
         <div class="choice-chips-list">
           ${options.map((opt, oIdx) => `
@@ -248,10 +266,24 @@ function renderCustomCourse(plan) {
               <span>${escapeHtml(opt)}</span>
             </label>
           `).join("")}
+          ${customOptionHtml}
         </div>
       `;
     } else if (step.type === "places") {
       const places = step.places || [];
+      const customPlaceHtml = step.allowCustomInput ? `
+        <div class="custom-writein-card places-writein-card" data-step-id="${stepId}">
+          <label class="custom-writein-label">
+            <input type="${step.multiple ? 'checkbox' : 'radio'}" name="${stepId}" value="__custom__" class="custom-writein-checkbox">
+            <span class="choice-chip-radio-icon"></span>
+            <span class="custom-writein-title">✍️ 목록에 없는 다른 장소 직접 적기</span>
+          </label>
+          <div class="custom-writein-body">
+            <input type="text" class="custom-writein-input" placeholder="${escapeHtml(step.customInputPlaceholder || '가고 싶은 식당, 카페, 장소를 직접 적어주세요!')}" maxlength="100">
+          </div>
+        </div>
+      ` : "";
+
       contentHtml = `
         <div class="place-cards-list">
           ${places.map((place, pIdx) => `
@@ -273,6 +305,7 @@ function renderCustomCourse(plan) {
               </div>
             </div>
           `).join("")}
+          ${customPlaceHtml}
         </div>
       `;
     } else if (step.type === "text") {
@@ -292,14 +325,22 @@ function renderCustomCourse(plan) {
       </div>
     `;
 
-    // choice-chip 선택 시 클래스 토글
+    // choice-chip 및 직접 입력 카드 이벤트 바인딩
     if (step.type === "choice") {
       const chips = block.querySelectorAll(".choice-chip");
+      const customCard = block.querySelector(".custom-writein-card");
+      const customCheck = customCard ? customCard.querySelector(".custom-writein-checkbox") : null;
+      const customInput = customCard ? customCard.querySelector(".custom-writein-input") : null;
+
       chips.forEach((chip) => {
         const input = chip.querySelector("input");
         input.addEventListener("change", () => {
           if (!step.multiple) {
             chips.forEach((c) => c.classList.remove("selected"));
+            if (customCard && customCheck) {
+              customCard.classList.remove("selected");
+              customCheck.checked = false;
+            }
           }
           if (input.checked) {
             chip.classList.add("selected");
@@ -308,8 +349,47 @@ function renderCustomCourse(plan) {
           }
         });
       });
+
+      if (customCard && customCheck && customInput) {
+        customCheck.addEventListener("change", () => {
+          if (!step.multiple) {
+            chips.forEach((c) => {
+              c.classList.remove("selected");
+              const inp = c.querySelector("input");
+              if (inp) inp.checked = false;
+            });
+          }
+          if (customCheck.checked) {
+            customCard.classList.add("selected");
+            customInput.focus();
+          } else {
+            customCard.classList.remove("selected");
+          }
+        });
+
+        const activateCustom = () => {
+          if (!customCheck.checked) {
+            customCheck.checked = true;
+            if (!step.multiple) {
+              chips.forEach((c) => {
+                c.classList.remove("selected");
+                const inp = c.querySelector("input");
+                if (inp) inp.checked = false;
+              });
+            }
+            customCard.classList.add("selected");
+          }
+        };
+
+        customInput.addEventListener("focus", activateCustom);
+        customInput.addEventListener("input", activateCustom);
+      }
     } else if (step.type === "places") {
       const cards = block.querySelectorAll(".custom-place-card");
+      const customCard = block.querySelector(".custom-writein-card");
+      const customCheck = customCard ? customCard.querySelector(".custom-writein-checkbox") : null;
+      const customInput = customCard ? customCard.querySelector(".custom-writein-input") : null;
+
       cards.forEach((card) => {
         const input = card.querySelector("input");
         card.addEventListener("click", () => {
@@ -320,6 +400,10 @@ function renderCustomCourse(plan) {
               c.classList.remove("selected");
               c.querySelector("input").checked = false;
             });
+            if (customCard && customCheck) {
+              customCard.classList.remove("selected");
+              customCheck.checked = false;
+            }
             input.checked = true;
           }
 
@@ -330,6 +414,41 @@ function renderCustomCourse(plan) {
           }
         });
       });
+
+      if (customCard && customCheck && customInput) {
+        customCheck.addEventListener("change", () => {
+          if (!step.multiple) {
+            cards.forEach((c) => {
+              c.classList.remove("selected");
+              const inp = c.querySelector("input");
+              if (inp) inp.checked = false;
+            });
+          }
+          if (customCheck.checked) {
+            customCard.classList.add("selected");
+            customInput.focus();
+          } else {
+            customCard.classList.remove("selected");
+          }
+        });
+
+        const activateCustom = () => {
+          if (!customCheck.checked) {
+            customCheck.checked = true;
+            if (!step.multiple) {
+              cards.forEach((c) => {
+                c.classList.remove("selected");
+                const inp = c.querySelector("input");
+                if (inp) inp.checked = false;
+              });
+            }
+            customCard.classList.add("selected");
+          }
+        };
+
+        customInput.addEventListener("focus", activateCustom);
+        customInput.addEventListener("input", activateCustom);
+      }
     }
 
     stepsContainer.appendChild(block);
@@ -680,7 +799,32 @@ function initStepNavigation() {
         if (step.type === "choice" || step.type === "places") {
           const checked = Array.from(
             customCourseForm.querySelectorAll(`input[name="${stepId}"]:checked`)
-          ).map((input) => input.value);
+          ).map((input) => input.value).filter((val) => val !== "__custom__");
+
+          // 직접 입력(Custom Write-in) 확인
+          const customCard = block ? block.querySelector(".custom-writein-card") : null;
+          let customText = "";
+          if (customCard) {
+            const customCheck = customCard.querySelector(".custom-writein-checkbox");
+            const customInput = customCard.querySelector(".custom-writein-input");
+            const rawVal = customInput ? customInput.value.trim() : "";
+
+            if (customCheck && customCheck.checked) {
+              if (!rawVal) {
+                showToast(`${i + 1}단계의 직접 입력 내용을 적어주세요! ✍️`);
+                if (customInput) customInput.focus();
+                if (customCard) customCard.scrollIntoView({ behavior: "smooth", block: "center" });
+                return;
+              }
+              customText = rawVal;
+            } else if (rawVal) {
+              customText = rawVal;
+            }
+          }
+
+          if (customText) {
+            checked.push(`[직접입력] ${customText}`);
+          }
 
           if (checked.length === 0) {
             missingStepTitle = `${i + 1}단계 (${step.title})`;
@@ -713,6 +857,9 @@ function initStepNavigation() {
         }
         return;
       }
+
+      // 최신 제출 답변 전역 저장 (카카오톡 공유/복사용)
+      window.latestSubmittedAnswers = answers;
 
       const now = new Date();
       const timeFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -789,6 +936,11 @@ function initStepNavigation() {
   }
 }
 
+function formatSummaryValue(val) {
+  const escaped = escapeHtml(val);
+  return escaped.replace(/\[직접입력\]/g, '<span class="summary-custom-badge">✍️ 직접입력</span>');
+}
+
 function renderCustomResultSummary(answers) {
   const container = document.getElementById("resultSummary");
   if (!container) return;
@@ -796,7 +948,7 @@ function renderCustomResultSummary(answers) {
   container.innerHTML = answers.map((ans) => `
     <div class="summary-item" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 0; border-bottom: 1px dashed #FFE0E6;">
       <span class="summary-label" style="font-size: 12px; color: #FF4D6D; font-weight: 700;">${escapeHtml(ans.title)}</span>
-      <span class="summary-val" style="font-size: 14.5px; font-weight: 700; color: #2B2D42; word-break: break-word; line-height: 1.4;">${escapeHtml(ans.value)}</span>
+      <span class="summary-val" style="font-size: 14.5px; font-weight: 700; color: #2B2D42; word-break: break-word; line-height: 1.4;">${formatSummaryValue(ans.value)}</span>
     </div>
   `).join("");
 }
@@ -813,9 +965,15 @@ function initKakaoShare() {
       ? window.activeCustomPlan.title
       : "저랑 데이트할래요? 💌";
 
+    let shareText = "저랑 데이트할래요? 솔직하게 답해주세요! 🥰";
+    if (window.latestSubmittedAnswers && window.latestSubmittedAnswers.length > 0) {
+      const summaryLines = window.latestSubmittedAnswers.map((a) => `• ${a.title}: ${a.value}`).join("\n");
+      shareText = `💌 데이트 코스 답변이 도착했어요!\n\n${summaryLines}\n\n우리 곧 만나요! 💕`;
+    }
+
     const shareData = {
       title: shareTitle,
-      text: "저랑 데이트할래요? 솔직하게 답해주세요! 🥰",
+      text: shareText,
       url: window.location.href
     };
 
@@ -824,25 +982,26 @@ function initKakaoShare() {
         await navigator.share(shareData);
       } catch (err) {
         if (err.name !== "AbortError") {
-          fallbackCopyUrl();
+          fallbackCopyUrl(shareText);
         }
       }
     } else {
-      fallbackCopyUrl();
+      fallbackCopyUrl(shareText);
     }
   });
 }
 
-function fallbackCopyUrl() {
+function fallbackCopyUrl(extraText) {
   const url = window.location.href;
+  const contentToCopy = extraText ? `${extraText}\n\n${url}` : url;
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(() => {
-      showToast("링크가 복사되었어요! 카톡에 붙여넣어 공유하세요 💬");
+    navigator.clipboard.writeText(contentToCopy).then(() => {
+      showToast("답변 내용과 링크가 복사되었어요! 카톡에 붙여넣어 공유하세요 💬");
     }).catch(() => {
-      prompt("아래 링크를 복사하여 카카오톡에 공유하세요:", url);
+      prompt("아래 내용을 복사하여 카카오톡에 공유하세요:", contentToCopy);
     });
   } else {
-    prompt("아래 링크를 복사하여 카카오톡에 공유하세요:", url);
+    prompt("아래 내용을 복사하여 카카오톡에 공유하세요:", contentToCopy);
   }
 }
 

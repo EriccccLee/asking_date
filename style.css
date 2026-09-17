@@ -1004,3 +1004,103 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-light);
 }
+
+/* --------------------------------------------------------------------------
+   Direct Write-in Option (직접 입력 카드 / 인풋)
+   -------------------------------------------------------------------------- */
+.custom-writein-card {
+  background: #FFFFFF;
+  border: 1.8px dashed #E2E8F0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  transition: all 0.22s ease;
+  margin-top: 4px;
+}
+
+.custom-writein-card:hover {
+  border-color: #FFB3C1;
+  background: #FFF9FA;
+}
+
+.custom-writein-card.selected {
+  background: #FFFDFD;
+  border-color: var(--primary);
+  border-style: solid;
+  box-shadow: 0 4px 16px rgba(255, 77, 109, 0.15);
+}
+
+.custom-writein-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 8px;
+}
+
+.custom-writein-checkbox {
+  display: none;
+}
+
+.custom-writein-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #495057;
+  transition: color 0.2s;
+}
+
+.custom-writein-card.selected .custom-writein-title {
+  color: var(--primary);
+}
+
+.custom-writein-card.selected .choice-chip-radio-icon {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.custom-writein-card.selected .choice-chip-radio-icon::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #FFF;
+  border-radius: 50%;
+}
+
+.custom-writein-body {
+  width: 100%;
+}
+
+.custom-writein-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  border: 1.5px solid #E9ECEF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.custom-writein-input:focus {
+  background: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.places-writein-card {
+  margin-top: 8px;
+}
+
+.summary-custom-badge {
+  display: inline-block;
+  background: #FFF0F3;
+  color: var(--primary);
+  border: 1px solid #FFCCD5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-right: 4px;
+}
+

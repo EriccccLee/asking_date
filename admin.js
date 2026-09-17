@@ -3745,7 +3745,12 @@ function parsePlanRaw(raw) {
       subTitle: data.s || data.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!",
       transitionMain: data.tm || data.transitionMain || "헉... 사실 거절할 줄 알았는데\n좋다니 저도 좋아요 ><",
       transitionSub: data.ts || data.transitionSub || "하늘에서 별이 쏟아지는 것처럼 기뻐요! ✨ 우리 둘만의 데이트 코스를 골라볼까요?",
-      steps: data.st || data.steps || []
+      steps: (data.st || data.steps || []).map((step, idx) => ({
+        ...step,
+        id: step.id || "step_" + idx,
+        allowCustomInput: Boolean(step.allowCustomInput || step.ci),
+        customInputPlaceholder: step.customInputPlaceholder || step.cip || ""
+      }))
     };
   } catch (e) {
     console.error("코스 데이터 파싱 오류:", e);
@@ -3951,9 +3956,22 @@ function renderSteps() {
       </div>
 
       ${step.type === "places" || step.type === "choice" ? `
-        <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+        <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
           <input type="checkbox" id="multi_${sIdx}" class="step-multiple-check" ${step.multiple ? "checked" : ""}>
-          <label for="multi_${sIdx}" style="margin-bottom:0; cursor:pointer;">여러 개 중복 선택 허용하기</label>
+          <label for="multi_${sIdx}" style="margin-bottom:0; cursor:pointer; font-weight:600;">여러 개 중복 선택 허용하기</label>
+        </div>
+
+        <div class="custom-input-setting-box">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="customInput_${sIdx}" class="step-custom-input-check" ${step.allowCustomInput ? "checked" : ""}>
+            <label for="customInput_${sIdx}" style="margin-bottom:0; cursor:pointer; font-weight:700; color: #FF4D6D;">
+              ✍️ 상대방이 직접 입력할 수 있는 입력창 제공 (기타 의견/장소)
+            </label>
+          </div>
+          <div class="step-custom-placeholder-wrap" style="${step.allowCustomInput ? '' : 'display:none;'} margin-top:8px; padding-left:24px;">
+            <label style="font-size:12px; color:#6C757D; margin-bottom:4px; display:block;">입력창 안내 문구 (Placeholder)</label>
+            <input type="text" class="form-control input-sm step-custom-placeholder" value="${escapeHtml(step.customInputPlaceholder || '')}" placeholder="${step.type === 'places' ? '예: 가고 싶은 다른 맛집이나 장소가 있다면 적어주세요' : '예: 원하는 다른 시간이나 선택지를 적어주세요'}">
+          </div>
         </div>
       ` : ""}
 
@@ -3980,6 +3998,26 @@ function renderSteps() {
     if (multiCheck) {
       multiCheck.addEventListener("change", (e) => {
         step.multiple = e.target.checked;
+        saveDraft();
+      });
+    }
+
+    const customInputCheck = stepEl.querySelector(".step-custom-input-check");
+    const customWrap = stepEl.querySelector(".step-custom-placeholder-wrap");
+    if (customInputCheck) {
+      customInputCheck.addEventListener("change", (e) => {
+        step.allowCustomInput = e.target.checked;
+        if (customWrap) {
+          customWrap.style.display = e.target.checked ? "block" : "none";
+        }
+        saveDraft();
+      });
+    }
+
+    const customPlaceholderInput = stepEl.querySelector(".step-custom-placeholder");
+    if (customPlaceholderInput) {
+      customPlaceholderInput.addEventListener("input", (e) => {
+        step.customInputPlaceholder = e.target.value;
         saveDraft();
       });
     }
@@ -4336,7 +4374,35 @@ function buildShareUrl() {
     s: currentCourse.subTitle,
     tm: currentCourse.transitionMain,
     ts: currentCourse.transitionSub,
-    st: currentCourse.steps
+    st: currentCourse.steps.map((st, idx) => {
+      const stepObj = {
+        id: st.id || "step_" + idx,
+        type: st.type,
+        title: st.title,
+        subtitle: st.subtitle,
+        multiple: Boolean(st.multiple)
+      };
+      if (st.allowCustomInput) {
+        stepObj.ci = 1;
+        if (st.customInputPlaceholder) {
+          stepObj.cip = st.customInputPlaceholder;
+        }
+      }
+      if (st.type === "choice") {
+        stepObj.options = st.options || [];
+      } else if (st.type === "places") {
+        stepObj.places = (st.places || []).map((p) => ({
+          name: p.name || "",
+          tag: p.tag || "",
+          desc: p.desc || "",
+          mapUrl: p.mapUrl || "",
+          image: p.image || ""
+        }));
+      } else if (st.type === "text") {
+        stepObj.placeholder = st.placeholder || "";
+      }
+      return stepObj;
+    })
   };
 
   const jsonStr = JSON.stringify(cleanPlan);
