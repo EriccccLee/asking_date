@@ -292,19 +292,24 @@ function parsePlanRaw(raw) {
   try {
     let jsonStr = "";
     if (raw.startsWith("lz:")) {
-      const payload = raw.substring(3);
+      let payload = raw.substring(3);
+      payload = decodeURIComponent(payload).replace(/ /g, "+");
       if (window.LZString && typeof window.LZString.decompressFromEncodedURIComponent === "function") {
         jsonStr = window.LZString.decompressFromEncodedURIComponent(payload);
       }
     } else if (raw.startsWith("b64:")) {
-      const payload = raw.substring(4);
-      jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(payload))));
+      let payload = raw.substring(4);
+      payload = decodeURIComponent(payload).replace(/ /g, "+");
+      jsonStr = decodeURIComponent(escape(atob(payload)));
     } else {
+      let payload = decodeURIComponent(raw).replace(/ /g, "+");
       if (window.LZString) {
-        jsonStr = window.LZString.decompressFromEncodedURIComponent(raw);
+        jsonStr = window.LZString.decompressFromEncodedURIComponent(payload);
       }
       if (!jsonStr) {
-        jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(raw))));
+        try {
+          jsonStr = decodeURIComponent(escape(atob(payload)));
+        } catch (e) {}
       }
     }
 
@@ -793,7 +798,7 @@ function buildShareUrl() {
   let encoded = "";
 
   if (window.LZString && typeof window.LZString.compressToEncodedURIComponent === "function") {
-    encoded = "lz:" + window.LZString.compressToEncodedURIComponent(jsonStr);
+    encoded = "lz:" + encodeURIComponent(window.LZString.compressToEncodedURIComponent(jsonStr));
   } else {
     encoded = "b64:" + encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
   }

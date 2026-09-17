@@ -79,124 +79,24 @@
       <p class="skip-hint">화면 아무 곳이나 터치해도 다음으로 넘어가요 ⏩</p>
     </section>
 
-    <!-- 2단계: 메뉴/코스 선택 설문 화면 -->
+    <!-- 2단계: 데이트 코스 선택 설문 화면 -->
     <section id="step2" class="step-card hidden">
-      <div class="badge-tag menu-badge" id="step2Badge">메뉴 정하기 🍽️</div>
+      <div class="badge-tag menu-badge" id="step2Badge">데이트 코스 정하기 💌</div>
 
       <div class="celebrate-icon">
-        <span class="big-emoji" id="step2Emoji">🍽️</span>
+        <span class="big-emoji" id="step2Emoji">🗺️</span>
       </div>
 
-      <h2 class="main-title" id="step2Title">우리 뭐 먹으러 갈까요?</h2>
+      <h2 class="main-title" id="step2Title">우리 이렇게 데이트할까요?</h2>
       <p class="sub-title" id="step2Subtitle">
-        좋아하는 음식 카테고리를 골라주세요!<br>
-        <strong>(여러 개 선택해도 좋아요 🥰)</strong>
+        가장 마음에 드는 선택지를 골라주세요! 🥰
       </p>
 
-      <!-- 커스텀 코스 동적 폼 (URL에 plan이 있을 때 활성화) -->
-      <form id="customCourseForm" class="custom-course-form hidden">
+      <!-- 데이트 코스 동적 설문 폼 -->
+      <form id="customCourseForm" class="custom-course-form">
         <div id="customStepsList" class="custom-steps-list"></div>
         <button type="submit" id="btnCustomSubmit" class="btn-submit" style="margin-top: 20px;">
           <span>데이트 코스 결정 완료 💌</span>
-        </button>
-      </form>
-
-      <!-- 기본 음식 카테고리 폼 (기존 링크 호환용) -->
-      <form id="menuForm" class="menu-selection-form default-course-form">
-        <div class="category-grid">
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="한식">
-            <div class="card-content">
-              <span class="cat-icon">🍚</span>
-              <span class="cat-name">한식</span>
-              <span class="cat-desc">삼겹살, 찌개, 솥밥 등</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="양식">
-            <div class="card-content">
-              <span class="cat-icon">🍝</span>
-              <span class="cat-name">양식</span>
-              <span class="cat-desc">파스타, 스테이크, 피자</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="일식">
-            <div class="card-content">
-              <span class="cat-icon">🍣</span>
-              <span class="cat-name">일식</span>
-              <span class="cat-desc">초밥, 라멘, 텐동, 돈카츠</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="중식">
-            <div class="card-content">
-              <span class="cat-icon">🥟</span>
-              <span class="cat-name">중식</span>
-              <span class="cat-desc">딤섬, 탕수육, 마라샹궈</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="아시안/분식">
-            <div class="card-content">
-              <span class="cat-icon">🍜</span>
-              <span class="cat-name">아시안/분식</span>
-              <span class="cat-desc">쌀국수, 팟타이, 떡볶이</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-
-          <label class="category-card">
-            <input type="checkbox" name="food_category" value="카페/디저트">
-            <div class="card-content">
-              <span class="cat-icon">🍰</span>
-              <span class="cat-name">디저트/카페</span>
-              <span class="cat-desc">예쁜 카페, 케이크, 빙수</span>
-            </div>
-            <span class="check-mark">✔</span>
-          </label>
-        </div>
-
-        <!-- 추가 입력 (선택) -->
-        <div class="input-group">
-          <label for="extraNote" class="input-label">
-            혹시 생각나는 특정 식당이나 못 먹는 음식이 있나요? (선택)
-          </label>
-          <input 
-            type="text" 
-            id="extraNote" 
-            name="extra_note" 
-            class="custom-input" 
-            placeholder="예: 오이 못 먹어요 / 연남동 가보고 싶어요!"
-            maxlength="100"
-          >
-        </div>
-
-        <!-- 선호 요일/시간대 (선택) -->
-        <div class="input-group">
-          <label for="preferredTime" class="input-label">
-            선호하는 날짜나 시간대 (선택)
-          </label>
-          <input 
-            type="text" 
-            id="preferredTime" 
-            name="preferred_time" 
-            class="custom-input" 
-            placeholder="예: 이번 주말 저녁 / 금요일 퇴근 후"
-            maxlength="60"
-          >
-        </div>
-
-        <button type="submit" id="btnSubmit" class="btn-submit">
-          <span>선택 완료하고 알려주기 💌</span>
         </button>
       </form>
     </section>
@@ -217,16 +117,8 @@
 
       <div class="summary-box" id="resultSummary">
         <div class="summary-item">
-          <span class="summary-label">선택한 메뉴</span>
+          <span class="summary-label">선택한 코스</span>
           <span class="summary-val" id="summaryMenu">-</span>
-        </div>
-        <div class="summary-item" id="summaryNoteRow">
-          <span class="summary-label">추가 메모</span>
-          <span class="summary-val" id="summaryNote">-</span>
-        </div>
-        <div class="summary-item" id="summaryTimeRow">
-          <span class="summary-label">선호 시간</span>
-          <span class="summary-val" id="summaryTime">-</span>
         </div>
       </div>
 
@@ -239,11 +131,6 @@
 
   </main>
 
-  <!-- 관리자 모드 이동 링크 -->
-  <footer class="app-footer" style="text-align: center; margin-top: 18px; margin-bottom: 24px; position: relative; z-index: 2;">
-    <a href="admin.html" class="admin-entry-link" style="font-size: 12px; color: rgba(108, 117, 125, 0.75); text-decoration: none; padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8);">⚙️ 나만의 데이트 코스 만들기 (관리자)</a>
-  </footer>
-
   <!-- 로딩 오버레이 -->
   <div id="loadingOverlay" class="loading-overlay hidden">
     <div class="loading-spinner"></div>
@@ -253,8 +140,8 @@
   <!-- 토스트 알림 -->
   <div id="toast" class="toast hidden"></div>
 
-  <!-- LZString 라이브러리 (코스 데이터 디코딩용) -->
-  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <!-- LZString 라이브러리 (코스 데이터 디코딩용 - 로컬 우선 로드) -->
+  <script src="lz-string.min.js"></script>
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="app.js"></script>

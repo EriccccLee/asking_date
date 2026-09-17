@@ -17,32 +17,131 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* --------------------------------------------------------------------------
-   0. 커스텀 데이트 코스 파싱 및 렌더링 엔진 (URL 기반)
+   0. 커스텀 데이트 코스 파싱 및 렌더링 엔진 (URL 기반 + 기본 프리셋)
    -------------------------------------------------------------------------- */
+const DEFAULT_PLAN = {
+  title: "저랑 데이트할래요? 🥰",
+  subTitle: "진지하게 고민하고 솔직하게 선택해줘요!",
+  steps: [
+    {
+      id: "step_time",
+      type: "choice",
+      title: "몇 시에 만날까요? ⏰",
+      subtitle: "편한 시간대로 골라주세요",
+      multiple: false,
+      options: [
+        "12:00 점심부터 맛있는 거 먹어요 🍽️",
+        "14:00 나른한 오후에 커피 한잔 ☕",
+        "17:30 저녁 노을 보며 만나요 🌅"
+      ]
+    },
+    {
+      id: "step_lunch",
+      type: "places",
+      title: "점심은 어디로 갈까요? 🍽️",
+      subtitle: "가보고 싶었던 곳들을 골라봤어요 (중복 선택 가능)",
+      multiple: true,
+      places: [
+        {
+          name: "오복수산 연남점",
+          tag: "일식 / 카이센동",
+          desc: "신선한 카이센동과 우니가 정말 유명한 정갈한 맛집!",
+          mapUrl: "https://map.naver.com/p/search/%EC%98%A4%EB%B3%B5%EC%88%98%EC%82%B0%20%EC%97%B0%EB%82%A8",
+          image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+          name: "클래식당 연남",
+          tag: "양식 / 파스타",
+          desc: "수제 라자냐와 감자 뇨끼가 환상적인 아늑한 분위기",
+          mapUrl: "https://map.naver.com/p/search/%ED%81%B4%EB%9E%98%EC%8B%9D%EB%8B%B9%20%EC%97%B0%EB%82%A8",
+          image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80"
+        }
+      ]
+    },
+    {
+      id: "step_cafe",
+      type: "places",
+      title: "점심 먹고 어디로 갈까요? ☕",
+      subtitle: "커피 한잔 하면서 도란도란 이야기 나눠요",
+      multiple: true,
+      places: [
+        {
+          name: "테일러커피 연남점",
+          tag: "감성 카페 / 커피",
+          desc: "시그니처 아인슈페너와 크림모카가 정말 맛있는 곳",
+          mapUrl: "https://map.naver.com/p/search/%ED%85%8C%EC%9D%BC%EB%9F%AC%EC%BB%A4%ED%94%BC%20%EC%97%B0%EB%82%A8",
+          image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+          name: "경의선 숲길 산책",
+          tag: "산책 / 힐링",
+          desc: "시원한 바람 쐬며 연트럴파크 산책로 걷기 🌿",
+          mapUrl: "https://map.naver.com/p/search/%EA%B2%BD%EC%9D%98%EC%84%A0%EC%88%B2%EA%B8%B8",
+          image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80"
+        }
+      ]
+    },
+    {
+      id: "step_dinner",
+      type: "places",
+      title: "저녁엔 어디서 한잔할까요? 🍷",
+      subtitle: "분위기 좋은 곳에서 하루 마무리하기!",
+      multiple: false,
+      places: [
+        {
+          name: "연남동 바라티에",
+          tag: "와인 / 타파스",
+          desc: "조명이 은은하고 아늑해서 깊은 이야기 나누기 딱 좋아요",
+          mapUrl: "https://map.naver.com/p/search/%EB%B0%94%EB%9D%BC%ED%8B%B0%EC%97%90%20%EC%97%B0%EB%82%A8",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&auto=format&fit=crop&q=80"
+        }
+      ]
+    },
+    {
+      id: "step_note",
+      type: "text",
+      title: "혹시 더 하고 싶은 말이 있나요? 💌",
+      subtitle: "못 먹는 음식이나 생각나는 곳이 있다면 편하게 적어줘요!",
+      placeholder: "예: 매운 건 잘 못 먹어요 / 커피는 디카페인 선호해요!"
+    }
+  ]
+};
+
 window.activeCustomPlan = null;
 
 function initCustomPlan() {
   window.activeCustomPlan = parsePlanFromUrl();
-  if (window.activeCustomPlan) {
-    // 1단계 첫 질문 제목/부제목 커스텀 반영
-    const titleEl = document.getElementById("mainStep1Title");
-    const subEl = document.getElementById("mainStep1SubTitle");
-    if (titleEl && window.activeCustomPlan.title) {
-      titleEl.textContent = window.activeCustomPlan.title;
-    }
-    if (subEl && window.activeCustomPlan.subTitle) {
-      subEl.textContent = window.activeCustomPlan.subTitle;
-    }
 
-    // 2단계 커스텀 코스 동적 렌더링
-    renderCustomCourse(window.activeCustomPlan);
-
-    // 관리자 페이지 링크에 현재 플랜 파라미터 전달 (수정 편의성)
-    const adminLink = document.querySelector(".admin-entry-link");
-    if (adminLink && window.location.search) {
-      adminLink.href = "admin.html" + window.location.search;
+  // URL 파라미터가 없는 경우 로컬 드래프트 또는 기본 프리셋 적용
+  if (!window.activeCustomPlan || !window.activeCustomPlan.steps || window.activeCustomPlan.steps.length === 0) {
+    const saved = localStorage.getItem("asking_date_admin_draft");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.steps && parsed.steps.length > 0) {
+          window.activeCustomPlan = parsed;
+        }
+      } catch (e) {}
     }
   }
+
+  // 여전히 없으면 기본 프리셋 확정 적용
+  if (!window.activeCustomPlan || !window.activeCustomPlan.steps || window.activeCustomPlan.steps.length === 0) {
+    window.activeCustomPlan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  }
+
+  // 1단계 첫 질문 제목/부제목 반영
+  const titleEl = document.getElementById("mainStep1Title");
+  const subEl = document.getElementById("mainStep1SubTitle");
+  if (titleEl && window.activeCustomPlan.title) {
+    titleEl.textContent = window.activeCustomPlan.title;
+  }
+  if (subEl && window.activeCustomPlan.subTitle) {
+    subEl.textContent = window.activeCustomPlan.subTitle;
+  }
+
+  // 2단계 커스텀 코스 동적 렌더링
+  renderCustomCourse(window.activeCustomPlan);
 }
 
 function parsePlanFromUrl() {
@@ -60,19 +159,24 @@ function parsePlanFromUrl() {
   try {
     let jsonStr = "";
     if (raw.startsWith("lz:")) {
-      const payload = raw.substring(3);
+      let payload = raw.substring(3);
+      payload = decodeURIComponent(payload).replace(/ /g, "+");
       if (window.LZString && typeof window.LZString.decompressFromEncodedURIComponent === "function") {
         jsonStr = window.LZString.decompressFromEncodedURIComponent(payload);
       }
     } else if (raw.startsWith("b64:")) {
-      const payload = raw.substring(4);
-      jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(payload))));
+      let payload = raw.substring(4);
+      payload = decodeURIComponent(payload).replace(/ /g, "+");
+      jsonStr = decodeURIComponent(escape(atob(payload)));
     } else {
+      let payload = decodeURIComponent(raw).replace(/ /g, "+");
       if (window.LZString) {
-        jsonStr = window.LZString.decompressFromEncodedURIComponent(raw);
+        jsonStr = window.LZString.decompressFromEncodedURIComponent(payload);
       }
       if (!jsonStr) {
-        jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(raw))));
+        try {
+          jsonStr = decodeURIComponent(escape(atob(payload)));
+        } catch (e) {}
       }
     }
 
@@ -92,14 +196,9 @@ function parsePlanFromUrl() {
 
 function renderCustomCourse(plan) {
   const customForm = document.getElementById("customCourseForm");
-  const defaultForm = document.getElementById("menuForm");
   const stepsContainer = document.getElementById("customStepsList");
 
-  if (!customForm || !defaultForm || !stepsContainer) return;
-
-  // 기본 음식 선택 폼 숨기고 커스텀 폼 활성화
-  defaultForm.classList.add("hidden");
-  customForm.classList.remove("hidden");
+  if (!customForm || !stepsContainer) return;
 
   // Step 2 배지 및 타이틀 업데이트
   const badge = document.getElementById("step2Badge");
@@ -483,7 +582,7 @@ function initStepNavigation() {
   const step3 = document.getElementById("step3");
 
   const btnYes = document.getElementById("btnYes");
-  const menuForm = document.getElementById("menuForm");
+  const customCourseForm = document.getElementById("customCourseForm");
   const loadingOverlay = document.getElementById("loadingOverlay");
 
   // [좋아요] 버튼 클릭 -> 하늘에서 별이 쏟아지는 특수 연출 & 중간 연출 화면
@@ -544,100 +643,7 @@ function initStepNavigation() {
     stepTransition.addEventListener("click", handleTransitionTouch, { once: true });
   });
 
-  // [기본 음식 카테고리 폼 제출] -> Google Sheets 저장 -> 3단계로 이동
-  menuForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // 체크된 카테고리 수집
-    const checkedBoxes = Array.from(
-      document.querySelectorAll('input[name="food_category"]:checked')
-    );
-
-    if (checkedBoxes.length === 0) {
-      showToast("먹고 싶은 메뉴를 최소 하나는 골라주세요! 🍽️");
-      return;
-    }
-
-    const selectedCategories = checkedBoxes.map((cb) => cb.value).join(", ");
-    const extraNote = document.getElementById("extraNote").value.trim();
-    const preferredTime = document.getElementById("preferredTime").value.trim();
-    const now = new Date();
-    const timeFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-    const payload = {
-      timestamp: timeFormatted,
-      courseTitle: "기본 음식 카테고리",
-      menu: selectedCategories,
-      note: extraNote || "없음",
-      preferredTime: preferredTime || "상관없음"
-    };
-
-    // 로딩 표시
-    loadingOverlay.classList.remove("hidden");
-
-    try {
-      if (GOOGLE_SHEET_WEB_APP_URL && GOOGLE_SHEET_WEB_APP_URL.startsWith("http")) {
-        // Google Apps Script 웹 앱으로 POST 전송
-        await fetch(GOOGLE_SHEET_WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors", // Google Apps Script 리디렉션 처리
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-      } else {
-        // 데모 모드 (URL 설정 전)
-        console.log("ℹ️ [데모 모드] 구글 시트 URL이 설정되지 않아 콘솔에 저장합니다:", payload);
-        await new Promise((res) => setTimeout(res, 800)); // 자연스러운 로딩 연출
-      }
-
-      // 요약 카드 업데이트
-      document.getElementById("summaryMenu").textContent = selectedCategories;
-      
-      const summaryNoteRow = document.getElementById("summaryNoteRow");
-      if (extraNote) {
-        document.getElementById("summaryNote").textContent = extraNote;
-        summaryNoteRow.style.display = "flex";
-      } else {
-        summaryNoteRow.style.display = "none";
-      }
-
-      const summaryTimeRow = document.getElementById("summaryTimeRow");
-      if (preferredTime) {
-        document.getElementById("summaryTime").textContent = preferredTime;
-        summaryTimeRow.style.display = "flex";
-      } else {
-        summaryTimeRow.style.display = "none";
-      }
-
-      // 3단계 완료 화면 표시
-      step2.classList.remove("active");
-      step2.classList.add("hidden");
-
-      step3.classList.remove("hidden");
-      step3.classList.add("active");
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      fireBigCelebration();
-
-      if (!GOOGLE_SHEET_WEB_APP_URL) {
-        showToast("구글 시트 연동 전(데모 모드)으로 완료되었습니다 ✨");
-      }
-    } catch (error) {
-      console.error("전송 에러:", error);
-      showToast("전송 중 문제가 생겼지만 마음은 잘 전달되었어요! 💕");
-      step2.classList.remove("active");
-      step2.classList.add("hidden");
-      step3.classList.remove("hidden");
-      step3.classList.add("active");
-    } finally {
-      loadingOverlay.classList.add("hidden");
-    }
-  });
-
-  // [커스텀 코스 폼 제출] -> Google Sheets 저장 -> 3단계로 이동
-  const customCourseForm = document.getElementById("customCourseForm");
+  // [데이트 코스 폼 제출] -> Google Sheets 저장 -> 3단계로 이동
   if (customCourseForm) {
     customCourseForm.addEventListener("submit", async (e) => {
       e.preventDefault();
