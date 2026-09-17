@@ -22,10 +22,10 @@ function doPost(e) {
     
     // 시트가 비어있다면 헤더 행 자동 생성
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["응답 일시", "선택한 메뉴", "추가 메모 / 못 먹는 음식", "선호 시간대"]);
+      sheet.appendRow(["응답 일시", "데이트 코스명", "선택한 메뉴/장소", "추가 메모 / 의견", "선호 시간대"]);
       
       // 헤더 스타일 꾸미기
-      var headerRange = sheet.getRange(1, 1, 1, 4);
+      var headerRange = sheet.getRange(1, 1, 1, 5);
       headerRange.setBackground("#FF4D6D");
       headerRange.setFontColor("#FFFFFF");
       headerRange.setFontWeight("bold");
@@ -36,16 +36,22 @@ function doPost(e) {
     // 전송된 데이터 파싱
     var data = JSON.parse(e.postData.contents);
     var timestamp = data.timestamp || new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+    var courseTitle = data.courseTitle || "데이트 신청";
     var menu = data.menu || "선택 없음";
     var note = data.note || "없음";
     var preferredTime = data.preferredTime || "상관없음";
     
-    // 새 행 추가
-    sheet.appendRow([timestamp, menu, note, preferredTime]);
-    
-    // 마지막 추가된 행 정렬 및 줄바꿈 정리
-    var lastRow = sheet.getLastRow();
-    sheet.getRange(lastRow, 1, 1, 4).setVerticalAlignment("middle");
+    // 새 행 추가 (5열 이상이면 코스명 별도 분리, 4열 시트면 메뉴에 코스명 병합 표기)
+    if (sheet.getLastColumn() >= 5) {
+      sheet.appendRow([timestamp, courseTitle, menu, note, preferredTime]);
+      var lastRow = sheet.getLastRow();
+      sheet.getRange(lastRow, 1, 1, 5).setVerticalAlignment("middle");
+    } else {
+      var displayMenu = (courseTitle && courseTitle !== "기본 음식 카테고리") ? ("[" + courseTitle + "]\n" + menu) : menu;
+      sheet.appendRow([timestamp, displayMenu, note, preferredTime]);
+      var lastRow = sheet.getLastRow();
+      sheet.getRange(lastRow, 1, 1, 4).setVerticalAlignment("middle");
+    }
     
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",

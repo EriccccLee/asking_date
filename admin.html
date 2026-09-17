@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>데이트 코스 플래너 관리자 💌</title>
+  
+  <meta name="theme-color" content="#FFE4E8">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-wrapper">
+    <!-- 상단 헤더 -->
+    <header class="admin-header">
+      <div class="header-left">
+        <a href="index.html" class="btn-back">← 메인 앱</a>
+        <span class="admin-badge">Admin Mode</span>
+      </div>
+      <h1 class="admin-title">데이트 코스 플래너 💌</h1>
+      <p class="admin-sub">
+        내가 원하는 순서대로 식당, 카페, 전시, 시간대를 구성하고<br>
+        상대방에게 보낼 <strong>나만의 맞춤 카톡 링크</strong>를 생성하세요.
+      </p>
+    </header>
+
+    <!-- 프리셋 빠른 템플릿 선택기 -->
+    <section class="card preset-card">
+      <div class="card-header-sm">
+        <span class="icon">✨</span>
+        <span class="label">추천 데이트 템플릿 (원클릭 적용)</span>
+      </div>
+      <div class="preset-buttons">
+        <button type="button" class="btn-preset" data-preset="yeonnam">
+          <span class="preset-icon">☕</span>
+          <span class="preset-title">연남동 감성 데이트</span>
+          <span class="preset-desc">카이센동 ➔ 감성카페 ➔ 산책 ➔ 와인바</span>
+        </button>
+        <button type="button" class="btn-preset" data-preset="seongsu">
+          <span class="preset-icon">🎨</span>
+          <span class="preset-title">성수동 핫플 & 전시</span>
+          <span class="preset-desc">브런치 ➔ 팝업/전시 ➔ 디저트 ➔ 퓨전양식</span>
+        </button>
+        <button type="button" class="btn-preset" data-preset="weekend">
+          <span class="preset-icon">🌿</span>
+          <span class="preset-title">주말 여유 힐링 데이트</span>
+          <span class="preset-desc">늦은 점심 ➔ 피크닉 ➔ 영화/공연 ➔ 디너</span>
+        </button>
+        <button type="button" class="btn-preset btn-preset-blank" data-preset="blank">
+          <span class="preset-icon">✏️</span>
+          <span class="preset-title">직접 만들기 (빈 코스)</span>
+          <span class="preset-desc">처음부터 자유롭게 구성하기</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 기본 설정 (타이틀 & 인트로) -->
+    <section class="card config-card">
+      <h2 class="section-title">1. 첫 질문 화면 설정</h2>
+      <div class="form-group">
+        <label for="courseTitle">첫 화면 질문 제목</label>
+        <input type="text" id="courseTitle" class="form-control" placeholder="저랑 데이트할래요? 🥰" value="저랑 데이트할래요? 🥰">
+      </div>
+      <div class="form-group">
+        <label for="courseSubTitle">첫 화면 부제목</label>
+        <input type="text" id="courseSubTitle" class="form-control" placeholder="진지하게 고민하고 솔직하게 선택해줘요!" value="진지하게 고민하고 솔직하게 선택해줘요! 🥰">
+      </div>
+    </section>
+
+    <!-- 데이트 코스 단계 빌더 -->
+    <section class="card builder-card">
+      <div class="builder-header">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 2px;">2. 데이트 코스 단계 구성</h2>
+          <p class="section-desc">순서를 변경(▲▼)하거나 장소 및 선택지를 추가하세요.</p>
+        </div>
+      </div>
+
+      <!-- 동적 단계 컨테이너 -->
+      <div id="stepsContainer" class="steps-container">
+        <!-- JS로 동적 생성 -->
+      </div>
+
+      <!-- 새 단계 추가 버튼 -->
+      <div class="add-step-dropdown">
+        <button type="button" class="btn-add-step" id="btnAddStepMenuToggle">
+          <span>➕ 새로운 질문/코스 단계 추가하기</span>
+        </button>
+        <div class="add-step-menu hidden" id="addStepMenu">
+          <button type="button" class="menu-item" data-add-type="time">
+            <span class="item-icon">⏰</span>
+            <div class="item-text">
+              <strong>만나는 시간대 선택</strong>
+              <small>점심부터 / 나른한 오후 / 퇴근 후 등</small>
+            </div>
+          </button>
+          <button type="button" class="menu-item" data-add-type="places_lunch">
+            <span class="item-icon">🍽️</span>
+            <div class="item-text">
+              <strong>점심 식당 후보 추천</strong>
+              <small>식당명, 대표 메뉴, 네이버 지도 링크, 사진</small>
+            </div>
+          </button>
+          <button type="button" class="menu-item" data-add-type="places_activity">
+            <span class="item-icon">🎨</span>
+            <div class="item-text">
+              <strong>오후 데이트 / 놀거리 후보</strong>
+              <small>전시, 팝업스토어, 영화, 산책 등</small>
+            </div>
+          </button>
+          <button type="button" class="menu-item" data-add-type="places_dinner">
+            <span class="item-icon">🍷</span>
+            <div class="item-text">
+              <strong>저녁 식당 / 와인바 후보</strong>
+              <small>분위기 좋은 저녁 후보 추천</small>
+            </div>
+          </button>
+          <button type="button" class="menu-item" data-add-type="text_note">
+            <span class="item-icon">💌</span>
+            <div class="item-text">
+              <strong>자유 메모 / 못 먹는 음식 질문</strong>
+              <small>상대방이 직접 텍스트로 적는 항목</small>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 하단 고정 액션 바 -->
+    <div class="admin-sticky-bar">
+      <div class="sticky-inner">
+        <button type="button" id="btnPreview" class="btn-action-outline">
+          <span>👁️ 미리보기</span>
+        </button>
+        <button type="button" id="btnGenerateLink" class="btn-action-primary">
+          <span>🔗 카톡 공유 링크 만들기</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 링크 생성 완료 모달 -->
+  <div id="shareModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="btnCloseModal">×</button>
+      <div class="modal-badge">링크 생성 완료! 🎉</div>
+      <h3 class="modal-title">상대방에게 보낼 카톡 링크</h3>
+      <p class="modal-desc">아래 링크를 복사하여 카카오톡 대화방에 붙여넣기하세요!</p>
+      
+      <div class="link-box">
+        <input type="text" id="generatedUrl" class="link-input" readonly>
+        <button type="button" id="btnCopyUrl" class="btn-copy">복사하기 📋</button>
+      </div>
+
+      <div class="modal-actions">
+        <a id="btnTestInNewTab" href="#" target="_blank" class="btn-test">
+          <span>🚀 생성된 링크로 직접 테스트해보기</span>
+        </a>
+      </div>
+      <p class="modal-tip">💡 카톡 대화방에 붙여넣으면 예쁜 썸네일 카드로 전송됩니다.</p>
+    </div>
+  </div>
+
+  <!-- 이미지 프리셋 선택 모달 -->
+  <div id="imagePresetModal" class="modal-overlay hidden">
+    <div class="modal-content image-modal">
+      <button type="button" class="modal-close" id="btnCloseImageModal">×</button>
+      <h3 class="modal-title">감성 사진 프리셋 선택 📸</h3>
+      <p class="modal-desc">음식 또는 데이트 장소에 어울리는 고화질 사진을 골라보세요.</p>
+      <div class="image-grid" id="imagePresetGrid">
+        <!-- JS로 채워짐 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="adminToast" class="toast hidden"></div>
+
+  <!-- LZString 라이브러리 (URL 압축용) -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

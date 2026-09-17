@@ -9,11 +9,229 @@
 const GOOGLE_SHEET_WEB_APP_URL = "";
 
 document.addEventListener("DOMContentLoaded", () => {
+  initCustomPlan();
   initFloatingHearts();
   initDodgeButton();
   initStepNavigation();
   initKakaoShare();
 });
+
+/* --------------------------------------------------------------------------
+   0. 커스텀 데이트 코스 파싱 및 렌더링 엔진 (URL 기반)
+   -------------------------------------------------------------------------- */
+window.activeCustomPlan = null;
+
+function initCustomPlan() {
+  window.activeCustomPlan = parsePlanFromUrl();
+  if (window.activeCustomPlan) {
+    // 1단계 첫 질문 제목/부제목 커스텀 반영
+    const titleEl = document.getElementById("mainStep1Title");
+    const subEl = document.getElementById("mainStep1SubTitle");
+    if (titleEl && window.activeCustomPlan.title) {
+      titleEl.textContent = window.activeCustomPlan.title;
+    }
+    if (subEl && window.activeCustomPlan.subTitle) {
+      subEl.textContent = window.activeCustomPlan.subTitle;
+    }
+
+    // 2단계 커스텀 코스 동적 렌더링
+    renderCustomCourse(window.activeCustomPlan);
+
+    // 관리자 페이지 링크에 현재 플랜 파라미터 전달 (수정 편의성)
+    const adminLink = document.querySelector(".admin-entry-link");
+    if (adminLink && window.location.search) {
+      adminLink.href = "admin.html" + window.location.search;
+    }
+  }
+}
+
+function parsePlanFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let raw = urlParams.get("plan");
+  if (!raw && window.location.hash) {
+    const hash = window.location.hash.substring(1);
+    if (hash.startsWith("plan=")) {
+      raw = hash.substring(5);
+    }
+  }
+
+  if (!raw) return null;
+
+  try {
+    let jsonStr = "";
+    if (raw.startsWith("lz:")) {
+      const payload = raw.substring(3);
+      if (window.LZString && typeof window.LZString.decompressFromEncodedURIComponent === "function") {
+        jsonStr = window.LZString.decompressFromEncodedURIComponent(payload);
+      }
+    } else if (raw.startsWith("b64:")) {
+      const payload = raw.substring(4);
+      jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(payload))));
+    } else {
+      if (window.LZString) {
+        jsonStr = window.LZString.decompressFromEncodedURIComponent(raw);
+      }
+      if (!jsonStr) {
+        jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(raw))));
+      }
+    }
+
+    if (!jsonStr) return null;
+
+    const data = JSON.parse(jsonStr);
+    return {
+      title: data.t || data.title || "저랑 데이트할래요? 🥰",
+      subTitle: data.s || data.subTitle || "진지하게 고민하고 솔직하게 선택해줘요!",
+      steps: data.st || data.steps || []
+    };
+  } catch (err) {
+    console.error("커스텀 데이트 플랜 파싱 실패:", err);
+    return null;
+  }
+}
+
+function renderCustomCourse(plan) {
+  const customForm = document.getElementById("customCourseForm");
+  const defaultForm = document.getElementById("menuForm");
+  const stepsContainer = document.getElementById("customStepsList");
+
+  if (!customForm || !defaultForm || !stepsContainer) return;
+
+  // 기본 음식 선택 폼 숨기고 커스텀 폼 활성화
+  defaultForm.classList.add("hidden");
+  customForm.classList.remove("hidden");
+
+  // Step 2 배지 및 타이틀 업데이트
+  const badge = document.getElementById("step2Badge");
+  const emoji = document.getElementById("step2Emoji");
+  const title = document.getElementById("step2Title");
+  const subtitle = document.getElementById("step2Subtitle");
+
+  if (badge) badge.textContent = "데이트 코스 정하기 💌";
+  if (emoji) emoji.textContent = "🗺️";
+  if (title) title.textContent = "우리 이렇게 데이트할까요?";
+  if (subtitle) subtitle.innerHTML = "가장 마음에 드는 선택지를 골라주세요! 🥰";
+
+  stepsContainer.innerHTML = "";
+
+  plan.steps.forEach((step, idx) => {
+    const stepId = step.id || "step_" + idx;
+    const block = document.createElement("div");
+    block.className = "custom-step-block";
+    block.dataset.stepId = stepId;
+    block.dataset.stepType = step.type;
+    block.dataset.multiple = step.multiple ? "true" : "false";
+
+    let contentHtml = "";
+
+    if (step.type === "choice") {
+      const options = step.options || [];
+      contentHtml = `
+        <div class="choice-chips-list">
+          ${options.map((opt, oIdx) => `
+            <label class="choice-chip" data-opt-idx="${oIdx}">
+              <input type="${step.multiple ? 'checkbox' : 'radio'}" name="${stepId}" value="${escapeHtml(opt)}">
+              <span class="choice-chip-radio-icon"></span>
+              <span>${escapeHtml(opt)}</span>
+            </label>
+          `).join("")}
+        </div>
+      `;
+    } else if (step.type === "places") {
+      const places = step.places || [];
+      contentHtml = `
+        <div class="place-cards-list">
+          ${places.map((place, pIdx) => `
+            <div class="custom-place-card" data-place-name="${escapeHtml(place.name)}">
+              <input type="${step.multiple ? 'checkbox' : 'radio'}" name="${stepId}" value="${escapeHtml(place.name)}">
+              <div class="place-card-banner">
+                <img src="${escapeHtml(place.image || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80')}" alt="${escapeHtml(place.name)}">
+                ${place.tag ? `<span class="place-card-badge">${escapeHtml(place.tag)}</span>` : ""}
+                <span class="place-card-select-icon">✔</span>
+              </div>
+              <div class="place-card-body">
+                <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
+                ${place.desc ? `<p class="place-card-desc">${escapeHtml(place.desc)}</p>` : ""}
+                ${place.mapUrl ? `
+                  <a href="${escapeHtml(place.mapUrl)}" target="_blank" rel="noopener noreferrer" class="place-card-map-btn" onclick="event.stopPropagation()">
+                    🗺️ 지도/리뷰 보기 ↗
+                  </a>
+                ` : ""}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    } else if (step.type === "text") {
+      contentHtml = `
+        <textarea class="custom-note-input" name="${stepId}" placeholder="${escapeHtml(step.placeholder || '자유롭게 적어주세요 :)')}" maxlength="200"></textarea>
+      `;
+    }
+
+    block.innerHTML = `
+      <div class="custom-step-header">
+        <span class="step-num-pill">${idx + 1}단계</span>
+        <h3 class="custom-step-title">${escapeHtml(step.title)}</h3>
+        ${step.subtitle ? `<p class="custom-step-sub">${escapeHtml(step.subtitle)}</p>` : ""}
+      </div>
+      <div class="custom-step-content">
+        ${contentHtml}
+      </div>
+    `;
+
+    // choice-chip 선택 시 클래스 토글
+    if (step.type === "choice") {
+      const chips = block.querySelectorAll(".choice-chip");
+      chips.forEach((chip) => {
+        const input = chip.querySelector("input");
+        input.addEventListener("change", () => {
+          if (!step.multiple) {
+            chips.forEach((c) => c.classList.remove("selected"));
+          }
+          if (input.checked) {
+            chip.classList.add("selected");
+          } else {
+            chip.classList.remove("selected");
+          }
+        });
+      });
+    } else if (step.type === "places") {
+      const cards = block.querySelectorAll(".custom-place-card");
+      cards.forEach((card) => {
+        const input = card.querySelector("input");
+        card.addEventListener("click", () => {
+          if (step.multiple) {
+            input.checked = !input.checked;
+          } else {
+            cards.forEach((c) => {
+              c.classList.remove("selected");
+              c.querySelector("input").checked = false;
+            });
+            input.checked = true;
+          }
+
+          if (input.checked) {
+            card.classList.add("selected");
+          } else {
+            card.classList.remove("selected");
+          }
+        });
+      });
+    }
+
+    stepsContainer.appendChild(block);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 /* --------------------------------------------------------------------------
    1. 배경 하트 파티클 생성기
@@ -305,6 +523,11 @@ function initStepNavigation() {
 
         step2.classList.remove("hidden");
         step2.classList.add("active");
+
+        if (window.activeCustomPlan) {
+          renderCustomCourse(window.activeCustomPlan);
+        }
+
         window.scrollTo({ top: 0, behavior: "smooth" });
       }, 600);
     };
@@ -321,7 +544,7 @@ function initStepNavigation() {
     stepTransition.addEventListener("click", handleTransitionTouch, { once: true });
   });
 
-  // [선택 완료] 폼 제출 -> Google Sheets 저장 -> 3단계로 이동
+  // [기본 음식 카테고리 폼 제출] -> Google Sheets 저장 -> 3단계로 이동
   menuForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -343,6 +566,7 @@ function initStepNavigation() {
 
     const payload = {
       timestamp: timeFormatted,
+      courseTitle: "기본 음식 카테고리",
       menu: selectedCategories,
       note: extraNote || "없음",
       preferredTime: preferredTime || "상관없음"
@@ -403,7 +627,6 @@ function initStepNavigation() {
     } catch (error) {
       console.error("전송 에러:", error);
       showToast("전송 중 문제가 생겼지만 마음은 잘 전달되었어요! 💕");
-      // 에러가 나도 사용자 경험상 완료 화면으로 넘김
       step2.classList.remove("active");
       step2.classList.add("hidden");
       step3.classList.remove("hidden");
@@ -412,6 +635,150 @@ function initStepNavigation() {
       loadingOverlay.classList.add("hidden");
     }
   });
+
+  // [커스텀 코스 폼 제출] -> Google Sheets 저장 -> 3단계로 이동
+  const customCourseForm = document.getElementById("customCourseForm");
+  if (customCourseForm) {
+    customCourseForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!window.activeCustomPlan || !window.activeCustomPlan.steps || window.activeCustomPlan.steps.length === 0) {
+        showToast("데이트 코스 정보가 올바르지 않습니다.");
+        return;
+      }
+
+      const steps = window.activeCustomPlan.steps;
+      const answers = [];
+      let missingStepTitle = null;
+      let missingBlock = null;
+
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const stepId = step.id || "step_" + i;
+        const block = customCourseForm.querySelector(`[data-step-id="${stepId}"]`);
+
+        if (step.type === "choice" || step.type === "places") {
+          const checked = Array.from(
+            customCourseForm.querySelectorAll(`input[name="${stepId}"]:checked`)
+          ).map((input) => input.value);
+
+          if (checked.length === 0) {
+            missingStepTitle = `${i + 1}단계 (${step.title})`;
+            missingBlock = block;
+            break;
+          }
+
+          answers.push({
+            stepNum: i + 1,
+            title: step.title,
+            type: step.type,
+            value: checked.join(", ")
+          });
+        } else if (step.type === "text") {
+          const textarea = customCourseForm.querySelector(`textarea[name="${stepId}"]`);
+          const textVal = textarea ? textarea.value.trim() : "";
+          answers.push({
+            stepNum: i + 1,
+            title: step.title,
+            type: "text",
+            value: textVal || "특별한 의견 없음"
+          });
+        }
+      }
+
+      if (missingStepTitle) {
+        showToast(`${missingStepTitle} 항목을 선택해주세요! 💕`);
+        if (missingBlock) {
+          missingBlock.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return;
+      }
+
+      const now = new Date();
+      const timeFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+      // 요약 텍스트 구성
+      const menuSummary = answers
+        .filter((a) => a.type !== "text")
+        .map((a) => `[${a.title}] ${a.value}`)
+        .join(" / ");
+
+      const noteAnswer = answers.find((a) => a.type === "text");
+      const noteSummary = noteAnswer ? noteAnswer.value : "없음";
+
+      const timeAnswer = answers.find((a) =>
+        a.title.includes("시") || a.title.includes("언제") || a.title.includes("시간")
+      );
+      const timeSummary = timeAnswer ? timeAnswer.value : "상관없음";
+
+      const payload = {
+        timestamp: timeFormatted,
+        courseTitle: window.activeCustomPlan.title || "커스텀 데이트 코스",
+        menu: menuSummary || "코스 선택 완료",
+        note: noteSummary,
+        preferredTime: timeSummary,
+        answers: answers
+      };
+
+      // 로딩 표시
+      loadingOverlay.classList.remove("hidden");
+
+      try {
+        if (GOOGLE_SHEET_WEB_APP_URL && GOOGLE_SHEET_WEB_APP_URL.startsWith("http")) {
+          await fetch(GOOGLE_SHEET_WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          console.log("ℹ️ [데모 모드] 커스텀 데이트 답변 저장:", payload);
+          await new Promise((res) => setTimeout(res, 800));
+        }
+
+        // 3단계 결과 요약창 렌더링
+        renderCustomResultSummary(answers);
+
+        // 3단계 완료 화면 표시
+        step2.classList.remove("active");
+        step2.classList.add("hidden");
+
+        step3.classList.remove("hidden");
+        step3.classList.add("active");
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        fireBigCelebration();
+
+        if (!GOOGLE_SHEET_WEB_APP_URL) {
+          showToast("구글 시트 연동 전(데모 모드)으로 완료되었습니다 ✨");
+        }
+      } catch (error) {
+        console.error("커스텀 코스 전송 에러:", error);
+        showToast("전송 중 문제가 생겼지만 마음은 잘 전달되었어요! 💕");
+        renderCustomResultSummary(answers);
+        step2.classList.remove("active");
+        step2.classList.add("hidden");
+        step3.classList.remove("hidden");
+        step3.classList.add("active");
+      } finally {
+        loadingOverlay.classList.add("hidden");
+      }
+    });
+  }
+}
+
+function renderCustomResultSummary(answers) {
+  const container = document.getElementById("resultSummary");
+  if (!container) return;
+
+  container.innerHTML = answers.map((ans) => `
+    <div class="summary-item" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 0; border-bottom: 1px dashed #FFE0E6;">
+      <span class="summary-label" style="font-size: 12px; color: #FF4D6D; font-weight: 700;">${escapeHtml(ans.title)}</span>
+      <span class="summary-val" style="font-size: 14.5px; font-weight: 700; color: #2B2D42; word-break: break-word; line-height: 1.4;">${escapeHtml(ans.value)}</span>
+    </div>
+  `).join("");
 }
 
 /* --------------------------------------------------------------------------
@@ -422,8 +789,12 @@ function initKakaoShare() {
   if (!btnShare) return;
 
   btnShare.addEventListener("click", async () => {
+    const shareTitle = (window.activeCustomPlan && window.activeCustomPlan.title)
+      ? window.activeCustomPlan.title
+      : "저랑 데이트할래요? 💌";
+
     const shareData = {
-      title: "저랑 데이트할래요? 💌",
+      title: shareTitle,
       text: "저랑 데이트할래요? 솔직하게 답해주세요! 🥰",
       url: window.location.href
     };

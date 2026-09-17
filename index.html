@@ -36,8 +36,8 @@
         </div>
       </div>
 
-      <h1 class="main-title">저랑 데이트할래요?</h1>
-      <p class="sub-title">진지하게 고민하고 솔직하게 선택해줘요! 🥰</p>
+      <h1 class="main-title" id="mainStep1Title">저랑 데이트할래요?</h1>
+      <p class="sub-title" id="mainStep1SubTitle">진지하게 고민하고 솔직하게 선택해줘요! 🥰</p>
 
       <div class="dodge-playground" id="dodgePlayground">
         <button type="button" id="btnYes" class="btn-action btn-yes">
@@ -79,22 +79,30 @@
       <p class="skip-hint">화면 아무 곳이나 터치해도 다음으로 넘어가요 ⏩</p>
     </section>
 
-    <!-- 2단계: 메뉴 선택 설문 화면 -->
+    <!-- 2단계: 메뉴/코스 선택 설문 화면 -->
     <section id="step2" class="step-card hidden">
-      <div class="badge-tag menu-badge">메뉴 정하기 🍽️</div>
+      <div class="badge-tag menu-badge" id="step2Badge">메뉴 정하기 🍽️</div>
 
       <div class="celebrate-icon">
-        <span class="big-emoji">🍽️</span>
+        <span class="big-emoji" id="step2Emoji">🍽️</span>
       </div>
 
-      <h2 class="main-title">우리 뭐 먹으러 갈까요?</h2>
-      <p class="sub-title">
+      <h2 class="main-title" id="step2Title">우리 뭐 먹으러 갈까요?</h2>
+      <p class="sub-title" id="step2Subtitle">
         좋아하는 음식 카테고리를 골라주세요!<br>
         <strong>(여러 개 선택해도 좋아요 🥰)</strong>
       </p>
 
-      <!-- 메뉴 카테고리 선택지 -->
-      <form id="menuForm" class="menu-selection-form">
+      <!-- 커스텀 코스 동적 폼 (URL에 plan이 있을 때 활성화) -->
+      <form id="customCourseForm" class="custom-course-form hidden">
+        <div id="customStepsList" class="custom-steps-list"></div>
+        <button type="submit" id="btnCustomSubmit" class="btn-submit" style="margin-top: 20px;">
+          <span>데이트 코스 결정 완료 💌</span>
+        </button>
+      </form>
+
+      <!-- 기본 음식 카테고리 폼 (기존 링크 호환용) -->
+      <form id="menuForm" class="menu-selection-form default-course-form">
         <div class="category-grid">
           <label class="category-card">
             <input type="checkbox" name="food_category" value="한식">
@@ -231,6 +239,11 @@
 
   </main>
 
+  <!-- 관리자 모드 이동 링크 -->
+  <footer class="app-footer" style="text-align: center; margin-top: 18px; margin-bottom: 24px; position: relative; z-index: 2;">
+    <a href="admin.html" class="admin-entry-link" style="font-size: 12px; color: rgba(108, 117, 125, 0.75); text-decoration: none; padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8);">⚙️ 나만의 데이트 코스 만들기 (관리자)</a>
+  </footer>
+
   <!-- 로딩 오버레이 -->
   <div id="loadingOverlay" class="loading-overlay hidden">
     <div class="loading-spinner"></div>
@@ -240,6 +253,8 @@
   <!-- 토스트 알림 -->
   <div id="toast" class="toast hidden"></div>
 
+  <!-- LZString 라이브러리 (코스 데이터 디코딩용) -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="app.js"></script>
