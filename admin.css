@@ -146,6 +146,47 @@ body {
   }
 }
 
+/* Preset Category Filter Tabs */
+.preset-filter-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.preset-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  padding: 8px 14px;
+  background: #F8F9FA;
+  border: 1.2px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tab-btn:hover {
+  background: #FFF0F3;
+  color: var(--primary);
+  border-color: #FFCCD5;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
 .btn-preset {
   background: #FFF9FA;
   border: 1.5px solid #FFE0E6;
@@ -163,6 +204,37 @@ body {
   background: #FFF0F3;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(255, 77, 109, 0.15);
+}
+
+.btn-preset.hidden {
+  display: none !important;
+}
+
+.preset-top-tag {
+  margin-bottom: 6px;
+}
+
+.preset-cat-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.badge-time {
+  background: #E7F5FF;
+  color: #1971C2;
+}
+
+.badge-place {
+  background: #FFF4E6;
+  color: #E8590C;
+}
+
+.badge-theme {
+  background: #F3F0FF;
+  color: #7950F2;
 }
 
 .preset-icon {

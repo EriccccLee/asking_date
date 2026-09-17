@@ -23,32 +23,119 @@
       </p>
     </header>
 
-    <!-- 프리셋 빠른 템플릿 선택기 -->
+    <!-- 추천 데이트 템플릿 (원클릭 적용) -->
     <section class="card preset-card">
       <div class="card-header-sm">
         <span class="icon">✨</span>
         <span class="label">추천 데이트 템플릿 (원클릭 적용)</span>
       </div>
-      <div class="preset-buttons">
-        <button type="button" class="btn-preset" data-preset="yeonnam">
+      <p class="section-desc" style="margin-bottom: 12px;">
+        상황이나 시간대에 맞는 최적의 코스를 골라보세요. 클릭 한 번으로 질문, 축하 문구, 코스 장소가 자동으로 채워집니다.
+      </p>
+
+      <!-- 카테고리 필터 탭 -->
+      <div class="preset-filter-tabs" id="presetFilterTabs">
+        <button type="button" class="tab-btn active" data-filter="all">🌟 전체 보기 (12개)</button>
+        <button type="button" class="tab-btn" data-filter="time">⏰ 시간대별 (3개)</button>
+        <button type="button" class="tab-btn" data-filter="place">🗺️ 서울 핫플 (4개)</button>
+        <button type="button" class="tab-btn" data-filter="theme">✨ 테마 &amp; 힐링 (4개)</button>
+      </div>
+
+      <div class="preset-buttons" id="presetButtonsGrid">
+        <!-- 1. 시간대별: 주말 올데이 -->
+        <button type="button" class="btn-preset" data-preset="all_day_weekend" data-category="time">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-time">⏰ 시간대별</span></div>
+          <span class="preset-icon">🌞</span>
+          <span class="preset-title">주말 올데이 풀코스</span>
+          <span class="preset-desc">브런치 ➔ 전시/문화 ➔ 감성카페 ➔ 와인/디너</span>
+        </button>
+
+        <!-- 2. 시간대별: 평일 퇴근 후 -->
+        <button type="button" class="btn-preset" data-preset="after_work" data-category="time">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-time">⏰ 시간대별</span></div>
+          <span class="preset-icon">🌙</span>
+          <span class="preset-title">평일 퇴근 후 저녁 &amp; 와인</span>
+          <span class="preset-desc">18:30 만남 ➔ 따뜻한 다이닝 ➔ 심야 와인바/이자카야</span>
+        </button>
+
+        <!-- 3. 시간대별: 오후 힐링 & 티타임 -->
+        <button type="button" class="btn-preset" data-preset="afternoon_cafe" data-category="time">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-time">⏰ 시간대별</span></div>
           <span class="preset-icon">☕</span>
-          <span class="preset-title">연남동 감성 데이트</span>
-          <span class="preset-desc">카이센동 ➔ 감성카페 ➔ 산책 ➔ 와인바</span>
+          <span class="preset-title">오후 나른한 커피 &amp; 산책</span>
+          <span class="preset-desc">14:00 티타임 ➔ 시그니처 디저트 ➔ 숲길 산책로</span>
         </button>
-        <button type="button" class="btn-preset" data-preset="seongsu">
+
+        <!-- 4. 서울 핫플: 연남동 -->
+        <button type="button" class="btn-preset" data-preset="yeonnam" data-category="place">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-place">🗺️ 서울 핫플</span></div>
+          <span class="preset-icon">☕</span>
+          <span class="preset-title">연남동 감성 골목 투어</span>
+          <span class="preset-desc">카이센동/파스타 ➔ 테일러커피 ➔ 경의선숲길 ➔ 와인바</span>
+        </button>
+
+        <!-- 5. 서울 핫플: 성수동 -->
+        <button type="button" class="btn-preset" data-preset="seongsu" data-category="place">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-place">🗺️ 서울 핫플</span></div>
           <span class="preset-icon">🎨</span>
-          <span class="preset-title">성수동 핫플 & 전시</span>
-          <span class="preset-desc">브런치 ➔ 팝업/전시 ➔ 디저트 ➔ 퓨전양식</span>
+          <span class="preset-title">성수동 팝업 &amp; 전시 핫플</span>
+          <span class="preset-desc">지중해식/파스타 ➔ 팝업거리 ➔ 미술관 전시 ➔ 디저트</span>
         </button>
-        <button type="button" class="btn-preset" data-preset="weekend">
-          <span class="preset-icon">🌿</span>
-          <span class="preset-title">주말 여유 힐링 데이트</span>
-          <span class="preset-desc">늦은 점심 ➔ 피크닉 ➔ 영화/공연 ➔ 디너</span>
+
+        <!-- 6. 서울 핫플: 잠실/석촌호수 -->
+        <button type="button" class="btn-preset" data-preset="jamsil" data-category="place">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-place">🗺️ 서울 핫플</span></div>
+          <span class="preset-icon">🦢</span>
+          <span class="preset-title">잠실 &amp; 석촌호수 로맨틱</span>
+          <span class="preset-desc">송리단길 맛집 ➔ 호수 산책 ➔ 롯데월드몰 ➔ 루프탑 바</span>
         </button>
-        <button type="button" class="btn-preset btn-preset-blank" data-preset="blank">
+
+        <!-- 7. 서울 핫플: 을지로/익선동 -->
+        <button type="button" class="btn-preset" data-preset="euljiro" data-category="place">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-place">🗺️ 서울 핫플</span></div>
+          <span class="preset-icon">🏮</span>
+          <span class="preset-title">을지로 &amp; 힙지로 레트로</span>
+          <span class="preset-desc">익선동 한옥 맛집 ➔ 청계천 산책 ➔ 빈티지 LP바/와인바</span>
+        </button>
+
+        <!-- 8. 테마: 한강 피크닉 -->
+        <button type="button" class="btn-preset" data-preset="hangang" data-category="theme">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-theme">✨ 테마 &amp; 힐링</span></div>
+          <span class="preset-icon">🌊</span>
+          <span class="preset-title">한강 피크닉 &amp; 노을 라면</span>
+          <span class="preset-desc">돗자리/텐트 ➔ 뽀글이 라면 ➔ 따릉이 라이딩 ➔ 분수 야경</span>
+        </button>
+
+        <!-- 9. 테마: 비오는 날 실내 데이트 -->
+        <button type="button" class="btn-preset" data-preset="rainy_indoor" data-category="theme">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-theme">✨ 테마 &amp; 힐링</span></div>
+          <span class="preset-icon">☔</span>
+          <span class="preset-title">비오는 날 실내 감성 데이트</span>
+          <span class="preset-desc">향수/원데이 공방 ➔ 실내 미디어아트 ➔ 스키야키/나베</span>
+        </button>
+
+        <!-- 10. 테마: 기념일 파인다이닝 -->
+        <button type="button" class="btn-preset" data-preset="anniversary" data-category="theme">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-theme">✨ 테마 &amp; 힐링</span></div>
+          <span class="preset-icon">🥩</span>
+          <span class="preset-title">기념일 로맨틱 파인다이닝</span>
+          <span class="preset-desc">스테이크하우스 코스 ➔ 라이브 재즈바 ➔ 루프탑 칵테일</span>
+        </button>
+
+        <!-- 11. 테마: 근교 드라이브 -->
+        <button type="button" class="btn-preset" data-preset="drive_healing" data-category="theme">
+          <div class="preset-top-tag"><span class="preset-cat-badge badge-theme">✨ 테마 &amp; 힐링</span></div>
+          <span class="preset-icon">🚗</span>
+          <span class="preset-title">서울 근교 힐링 드라이브</span>
+          <span class="preset-desc">남양주/팔당 드라이브 ➔ 북한강뷰 대형 베이커리 ➔ 강변 맛집</span>
+        </button>
+
+        <!-- 12. 직접 만들기 -->
+        <button type="button" class="btn-preset btn-preset-blank" data-preset="blank" data-category="all">
+          <div class="preset-top-tag"><span class="preset-cat-badge" style="background:#F1F3F5;color:#495057;">✏️ 자유 구성</span></div>
           <span class="preset-icon">✏️</span>
           <span class="preset-title">직접 만들기 (빈 코스)</span>
-          <span class="preset-desc">처음부터 자유롭게 구성하기</span>
+          <span class="preset-desc">처음부터 자유롭게 나만의 순서로 구성하기</span>
         </button>
       </div>
     </section>
